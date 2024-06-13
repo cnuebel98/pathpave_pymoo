@@ -13,7 +13,8 @@ class CopyMutation(Mutation):
 
 class ChangePartsMutation(Mutation):
     '''This cuts the individual at two parts, and finds a new random way between the two cuts'''
-    def __init__(self):
+    def __init__(self, mutation_rate):
+        self.mutation_rate = mutation_rate
         super().__init__(1) # It takes one individual and returns one mutant
 
     def _do(self, problem, X, **kwargs):
@@ -22,10 +23,9 @@ class ChangePartsMutation(Mutation):
         
         # For each individual in the Population we decide, 
         # if it gets Mutated or not according to the Mutationrate
-        mutation_rate = 0.1
         X_mut = copy.deepcopy(X)
         for i in range(len(X_mut)):
-            if random.random() < mutation_rate:
+            if random.random() < self.mutation_rate:
                 #print()
                 #print("Individual to Mutate: " + str(X_mut[i][0]))
                 #print("len of indi to mutate: " + str(len(X_mut[i][0])))
