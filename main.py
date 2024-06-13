@@ -11,13 +11,17 @@ from crossovers import CopyCrossover, CrossingCrossover
 from problem import GridWorldProblem
 
 # Define parameters
-width = 8
-height = 8
+width = 10
+height = 20
 seed = 42
 
 # Set start and end points
 start = (height - 1, 0)
 end = (0, width - 1)
+
+# Set Crossover and Mutation Probabilities
+mutation_rate = 0.1
+prob_crossover = 0.1
 
 # Generate obstacles
 np.random.seed(seed)
@@ -29,9 +33,9 @@ problem = GridWorldProblem(width, height, obstacles, start, end)
 # Usage:
 pop_size = 5
 sampling = RandomSampling(width, height, start, end)
-crossover = CrossingCrossover()
-#crossover = CopyCrossover()
-mutation = ChangePartsMutation()
+crossover = CrossingCrossover(prob_crossover=prob_crossover)
+# crossover = CopyCrossover()
+mutation = ChangePartsMutation(mutation_rate=mutation_rate)
 selection = RandomSelection()
 
 # Initialize the algorithm
@@ -45,19 +49,19 @@ algorithm = NSGA2(pop_size=pop_size,
 # Run optimization
 res = minimize(problem,
                algorithm,
-               ('n_eval', 1000),
+               ('n_eval', 10000),
                seed=seed,
                verbose=True)
 
 
 #print("res.pop: " + str(res.F))
 
-# Step 4: Extract the Pareto front data
+# Extract the Pareto front data
 pareto_front = res.F
 
 #print(pareto_front[:, 0])
 
-# Step 5: Plot the Pareto front
+# Plot the Pareto front
 plt.figure()
 plt.scatter(pareto_front[:, 0], pareto_front[:, 1], label='Pareto Front', color='b')
 
@@ -96,7 +100,7 @@ ax.plot(end[1], end[0], 'ro', markersize=10, label='End')        # End point
 # Plot the paths of the final population
 if len(paths[0]) != 2:
     for path in paths:
-        path_x, path_y = zip(*path)
+        path_y, path_x = zip(*path)
         ax.plot(path_x, path_y, marker='o')
 elif len(paths[0]) == 2:
     for path in paths:
