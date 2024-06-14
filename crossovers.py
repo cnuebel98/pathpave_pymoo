@@ -1,5 +1,7 @@
 from pymoo.core.crossover import Crossover
 import copy
+from aStar import aStarPath
+import numpy as np
 
 class CopyCrossover(Crossover):
     def __init__(self):
@@ -40,3 +42,43 @@ class CrossingCrossover(Crossover):
             #print("hi4: " + str(individual[0][0][0][0]))
             
         return X_crossed
+    
+
+class AStarCrossover(Crossover):
+    def __init__(self, prob_crossover):
+        super().__init__(2, 2, prob=prob_crossover)
+
+    def _do(self, problem, X, **kwargs):
+        print(f"X: {X}")
+        crossoverIndividuals = []
+        for individual_list in X:
+            for individual in individual_list:
+                crossoverIndividuals.append(individual[0])
+        
+        #You have to check length of individuals to set maximum cutoff point
+        if len(crossoverIndividuals[0])<=len(crossoverIndividuals[1]):
+            maxLength = len(crossoverIndividuals[0])
+        else:
+            maxLength = len(crossoverIndividuals[1])
+
+        #Randomly get cutoff point
+        cutoffPoint = np.random.randint(1, maxLength-1)
+
+        #Get points in each individual
+        firstPoint = crossoverIndividuals[0][cutoffPoint]
+        secondPoint = crossoverIndividuals[1][cutoffPoint]
+
+        if firstPoint != secondPoint:
+            #TODO: Get map parameters here
+            path = aStarPath(5, 5, firstPoint, secondPoint, True)
+
+            newFirstpath = crossoverIndividuals[0][:cutoffPoint]
+            newFirstpath += path[:-1]
+            newFirstpath += crossoverIndividuals[1][cutoffPoint:]
+
+            newSecondPath = crossoverIndividuals[1][:cutoffPoint]
+            path.reverse()
+            newSecondPath += path[:-1]
+            newSecondPath += crossoverIndividuals[0][cutoffPoint:]
+
+            return np.array([newFirstpath, newSecondPath])

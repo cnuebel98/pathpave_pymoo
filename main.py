@@ -7,12 +7,12 @@ from pymoo.algorithms.moo.nsga2 import NSGA2
 
 from sampling import RandomSampling
 from mutations import CopyMutation, ChangePartsMutation
-from crossovers import CopyCrossover, CrossingCrossover
+from crossovers import CopyCrossover, CrossingCrossover, AStarCrossover
 from problem import GridWorldProblem
 
 # Define parameters
-width = 10
-height = 20
+width = 5
+height = 5
 seed = 42
 
 # Set start and end points
@@ -31,10 +31,11 @@ obstacles = np.round(np.random.rand(height, width), 2)
 problem = GridWorldProblem(width, height, obstacles, start, end)
 
 # Usage:
-pop_size = 5
+pop_size = 2
 sampling = RandomSampling(width, height, start, end)
 crossover = CrossingCrossover(prob_crossover=prob_crossover)
 # crossover = CopyCrossover()
+crossover = AStarCrossover(0.5)
 mutation = ChangePartsMutation(mutation_rate=mutation_rate)
 selection = RandomSelection()
 
