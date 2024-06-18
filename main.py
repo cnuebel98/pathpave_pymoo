@@ -7,11 +7,11 @@ from pymoo.algorithms.moo.nsga2 import NSGA2
 
 from sampling import RandomSampling
 from mutations import CopyMutation, ChangePartsMutation
-from crossovers import CopyCrossover, CrossingCrossover
+from crossovers import CopyCrossover, CrossingCrossover, onePointCrossover
 from problem import GridWorldProblem
 
 # Define parameters
-width = 10
+width = 20
 height = 20
 seed = 42
 
@@ -21,7 +21,7 @@ end = (0, width - 1)
 
 # Set Crossover and Mutation Probabilities
 mutation_rate = 0.1
-prob_crossover = 0.1
+prob_crossover = 0.5
 
 # Generate obstacles
 np.random.seed(seed)
@@ -31,10 +31,11 @@ obstacles = np.round(np.random.rand(height, width), 2)
 problem = GridWorldProblem(width, height, obstacles, start, end)
 
 # Usage:
-pop_size = 5
+pop_size = 50
 sampling = RandomSampling(width, height, start, end)
-crossover = CrossingCrossover(prob_crossover=prob_crossover)
-# crossover = CopyCrossover()
+#crossover = CrossingCrossover(prob_crossover=prob_crossover)
+#crossover = CopyCrossover()
+crossover = onePointCrossover(prob_crossover, (width, height))
 mutation = ChangePartsMutation(mutation_rate=mutation_rate)
 selection = RandomSelection()
 
@@ -81,6 +82,11 @@ paths = res.X.squeeze().tolist()
 print("Paths:")
 for path in paths:
     print(path)
+
+for path in paths:
+    for coord in path:
+        if path.count(coord) > 1 and coord == (11, 7):
+            print(f"Path: {path}, Doubled coord {coord}")
 
 # Create a plot for the final grid with paths
 fig, ax = plt.subplots()
