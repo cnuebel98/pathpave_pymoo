@@ -65,9 +65,9 @@ def aStarPath(width:int , height: int, start: tuple, end:tuple, distanceMetric: 
         children:list[Node] = []
         #This is implicitly a 4 neighborhood
         for newPos in [(0, -1), (0, 1), (-1, 0), (1, 0)]:
-            nodePosition = ((currentNode.getPosition()[0] + newPos[0], currentNode.getPosition()[1] + newPos[1]))
+            nodePosition = ((currentNode.position[0] + newPos[0], currentNode.position[1] + newPos[1]))
             #CAREFUL THIS HAS TO CHECK FOR CORRECT DIMENSIONS!!!!!!!!!!!
-            if nodePosition[0] > width or nodePosition[0] < 0 or nodePosition[1] > height or nodePosition[1] < 0:
+            if nodePosition[0] > height or nodePosition[0] < 0 or nodePosition[1] > width or nodePosition[1] < 0:
                 continue #Skips illegal children
             
             #Create new child node and append it to the list of children
@@ -97,3 +97,5 @@ def aStarPath(width:int , height: int, start: tuple, end:tuple, distanceMetric: 
                             openList.append(child)
                     else:
                         openList.append(child)
+    print(f"w: {width}, h: {height}, start: {start}, end: {end}")
+    raise(Exception("Ooops"))
