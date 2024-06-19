@@ -9,6 +9,7 @@ from sampling import RandomSampling
 from mutations import CopyMutation, ChangePartsMutation
 from crossovers import CopyCrossover, CrossingCrossover, onePointCrossover
 from problem import GridWorldProblem
+from duplicate_handling import EliminateDuplicates
 
 # Define parameters
 width = 20
@@ -37,20 +38,22 @@ sampling = RandomSampling(width, height, start, end)
 #crossover = CopyCrossover()
 crossover = onePointCrossover(prob_crossover, (width, height))
 mutation = ChangePartsMutation(mutation_rate=mutation_rate)
-selection = RandomSelection()
+eliminate_duplicates = EliminateDuplicates()
+
 
 # Initialize the algorithm
 algorithm = NSGA2(pop_size=pop_size, 
                   sampling=sampling, 
                   crossover=crossover, 
-                  mutation=mutation, 
-                  selection=selection, 
-                  eliminate_duplicates=False)
+                  mutation=mutation,
+                  # Use the following line for Random Selection. Otherwise its binary Tournament Selection 
+                  #selection=RandomSelection(), 
+                  eliminate_duplicates=eliminate_duplicates)
 
 # Run optimization
 res = minimize(problem,
                algorithm,
-               ('n_eval', 10000),
+               ('n_eval', 1000),
                seed=seed,
                verbose=True)
 
@@ -63,7 +66,7 @@ pareto_front = res.F
 #print(pareto_front[:, 0])
 
 # Plot the Pareto front
-plt.figure()
+plt.figure(figsize=(10, 8))
 plt.scatter(pareto_front[:, 0], pareto_front[:, 1], label='Pareto Front', color='b')
 
 # Customize the plot
@@ -86,10 +89,11 @@ for path in paths:
 for path in paths:
     for coord in path:
         if path.count(coord) > 1 and coord == (11, 7):
+            # This should never print again, as soon as the repair function is implemented
             print(f"Path: {path}, Doubled coord {coord}")
 
 # Create a plot for the final grid with paths
-fig, ax = plt.subplots()
+fig, ax = plt.subplots(figsize=(13, 8))
 
 # Display the obstacle weights in the grid
 for i in range(height):
@@ -109,9 +113,8 @@ if len(paths[0]) != 2:
         path_y, path_x = zip(*path)
         ax.plot(path_x, path_y, marker='o')
 elif len(paths[0]) == 2:
-    for path in paths:
-        x, y = path
-        ax.plot(x, y, marker='o')
+    path_y, path_x = zip(*paths)
+    ax.plot(path_x, path_y, marker='o')
 
 # Set the ticks and labels
 ax.set_xticks(np.arange(width))
