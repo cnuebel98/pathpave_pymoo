@@ -10,10 +10,11 @@ from mutations import CopyMutation, ChangePartsMutation
 from crossovers import CopyCrossover, CrossingCrossover, onePointCrossover
 from problem import GridWorldProblem
 from duplicate_handling import EliminateDuplicates
+from pathRepair import pathRepair
 
 # Define parameters
-width = 30
-height = 30
+width = 20
+height = 20
 seed = 42
 
 # Set start and end points
@@ -32,13 +33,14 @@ obstacles = np.round(np.random.rand(height, width), 2)
 problem = GridWorldProblem(width, height, obstacles, start, end)
 
 # Usage:
-pop_size = 50
+pop_size = 10
 sampling = RandomSampling(width, height, start, end)
 #crossover = CrossingCrossover(prob_crossover=prob_crossover)
 #crossover = CopyCrossover()
 crossover = onePointCrossover(prob_crossover, (width, height))
 mutation = ChangePartsMutation(mutation_rate=mutation_rate)
 eliminate_duplicates = EliminateDuplicates()
+repair = pathRepair()
 
 
 # Initialize the algorithm
@@ -46,6 +48,7 @@ algorithm = NSGA2(pop_size=pop_size,
                   sampling=sampling, 
                   crossover=crossover, 
                   mutation=mutation,
+                  repair = repair,
                   # Use the following line for Random Selection. Otherwise its binary Tournament Selection 
                   #selection=RandomSelection(), 
                   eliminate_duplicates=eliminate_duplicates)
@@ -53,7 +56,7 @@ algorithm = NSGA2(pop_size=pop_size,
 # Run optimization
 res = minimize(problem,
                algorithm,
-               ('n_eval', 1000),
+               ('n_eval', 200),
                seed=seed,
                verbose=True)
 
