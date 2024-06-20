@@ -23,11 +23,15 @@ class CrossingCrossover(Crossover):
         #print(type(X_crossed))
 
         for individual_list in X_crossed:
+            #print("Hi" + str(individual_list))
             for individual in individual_list:
                 gene_sequence = individual[0]
-                print("Hi" + str(gene_sequence))
 
+                for gene in gene_sequence:
+                    
+                    #print("Hi" + str(gene))
 
+                    ...
 
                 #for gene in gene_sequence:
                     #print("hi " + str(gene))

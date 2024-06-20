@@ -155,7 +155,7 @@ class GridWorldProblem(Problem):
                     current_obstacles = new_obstacles
 
             steps = len(x[0])
-            steps_all.append(steps)
+            steps_all.append(float(steps))
             obstacles_all.append(obstacle_weights_summed)
 
         out["F"] = np.column_stack([steps_all, obstacles_all])
