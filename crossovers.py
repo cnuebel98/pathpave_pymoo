@@ -2,6 +2,7 @@ from pymoo.core.crossover import Crossover
 import copy
 from aStar import aStarPath
 import numpy as np
+from pathRepair import repairPath
 
 class CopyCrossover(Crossover):
     def __init__(self):
@@ -79,15 +80,13 @@ class onePointCrossover(Crossover):
             newFirstPath = crossoverIndividuals[0][:cutoffPoint]
             newFirstPath += path[:-1]
             newFirstPath += crossoverIndividuals[1][cutoffPoint:]
-            newFirstPath = self.checkNewPath(newFirstPath)
             newSecondPath = crossoverIndividuals[1][:cutoffPoint]
             path.reverse()
             newSecondPath += path[:-1]
             newSecondPath += crossoverIndividuals[0][cutoffPoint:]
-            newSecondPath = self.checkNewPath(newSecondPath)
+            newFirstPath = repairPath(newFirstPath)
+            newSecondPath = repairPath(newSecondPath)
 
-            #print(f"New first path: {newFirstPath}")
-            #print(f"New second path: {newSecondPath}")
 
 
             convFirst = np.empty(1, dtype=object)
@@ -102,8 +101,8 @@ class onePointCrossover(Crossover):
             newFirstPath += crossoverIndividuals[1][cutoffPoint:]
             newSecondPath = crossoverIndividuals[1][:cutoffPoint]
             newSecondPath += crossoverIndividuals[0][cutoffPoint:]
-            newFirstPath = self.checkNewPath(newFirstPath)
-            newSecondPath = self.checkNewPath(newSecondPath)
+            newFirstPath = repairPath(newFirstPath)
+            newSecondPath = repairPath(newSecondPath)
 
             convFirst = np.empty(1, dtype=object)
             convFirst[:] = [newFirstPath]
@@ -113,18 +112,3 @@ class onePointCrossover(Crossover):
             X[1] = convSecond
 
         return X
-    
-    def checkNewPath(self, path:list):
-        i = 0
-        while i+2 < len(path):
-            first = path[i]
-            second = path[i+2]
-            if first == second:
-                #print(f"Step 1:{path[i]}, Step 2:{path[i+1]}, Step 3: {path[i+2]} ")
-                #print("REPAIRING PATH")
-                #This has to be i+1 both times since the popped index is deleted and everything afterwards moved 1 index back
-                path.pop(i+1)
-                path.pop(i+1)
-                #print(f"REPAIRED PATH Step 1:{path[i]}, Step 2:{path[i+1]}, Step 3: {path[i+2]} ")
-            i+=1
-        return path

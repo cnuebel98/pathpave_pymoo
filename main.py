@@ -12,8 +12,8 @@ from problem import GridWorldProblem
 from duplicate_handling import EliminateDuplicates
 
 # Define parameters
-width = 20
-height = 20
+width = 30
+height = 30
 seed = 42
 
 # Set start and end points
@@ -22,7 +22,7 @@ end = (0, width - 1)
 
 # Set Crossover and Mutation Probabilities
 mutation_rate = 0.1
-prob_crossover = 0.5
+prob_crossover = 0.1
 
 # Generate obstacles
 np.random.seed(seed)
@@ -85,12 +85,6 @@ paths = res.X.squeeze().tolist()
 print("Paths:")
 for path in paths:
     print(path)
-
-for path in paths:
-    for coord in path:
-        if path.count(coord) > 1 and coord == (11, 7):
-            # This should never print again, as soon as the repair function is implemented
-            print(f"Path: {path}, Doubled coord {coord}")
 
 # Create a plot for the final grid with paths
 fig, ax = plt.subplots(figsize=(13, 8))
