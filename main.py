@@ -9,7 +9,7 @@ from pymoo.algorithms.moo.moead import MOEAD
 from pymoo.algorithms.moo.spea2 import SPEA2
 
 from sampling import RandomSampling
-from mutations import CopyMutation, ChangePartsMutation
+from mutations import CopyMutation, ChangePartsMutation, RectangleMutation, RadiusSamplingMutation
 from crossovers import CopyCrossover, CrossingCrossover, onePointCrossover
 from problem import GridWorldProblem
 from duplicate_handling import EliminateDuplicates
@@ -43,24 +43,26 @@ obstacle_map = obstacles.create_obstacles_bubble_in_middle()
 problem = GridWorldProblem(width, height, obstacle_map, start, end)
 
 # Usage:
-pop_size = 10
+pop_size = 50
 sampling = RandomSampling(width, height, start, end)
 #crossover = CrossingCrossover(prob_crossover=prob_crossover)
 #crossover = CopyCrossover()
 crossover = onePointCrossover(prob_crossover, (width, height))
-mutation = ChangePartsMutation(mutation_rate=mutation_rate)
+#mutation = RectangleMutation(mutation_rate=mutation_rate)
+mutation = RadiusSamplingMutation(mutation_rate=mutation_rate, radius=int(0.1*height+0.1*width), problem=problem)
+#mutation = ChangePartsMutation(mutation_rate)
 eliminate_duplicates = EliminateDuplicates()
 repair = pathRepair()
 ref_dirs = get_reference_directions("das-dennis", 2, n_partitions=5)
 
 # Initialize the NSGA2 algorithm
-#Use the following line for Random Selection. Otherwise its binary Tournament Selection 
+#Use the following line for Random Selection in the algorithms. Otherwise its binary Tournament Selection 
 #selection=RandomSelection(), 
 
 nsga2 = NSGA2(pop_size=pop_size, 
               sampling=sampling, 
               crossover=crossover, 
-              mutation=mutation, 
+              mutation=mutation,
               repair=repair,
               eliminate_duplicates=eliminate_duplicates)
 
@@ -88,11 +90,11 @@ moead = MOEAD(ref_dirs=ref_dirs,
 
 # Run optimization
 res = minimize(problem
-               #,nsga2
-               ,nsga3
+               ,nsga2
+               #,nsga3
                #,spea2
                #,moead # moead doesn't want to take duplicate elimination
-               ,('n_eval', 100)
+               ,('n_eval', 1000)
                ,seed=seed
                ,verbose=True)
 

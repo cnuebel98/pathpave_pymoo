@@ -61,10 +61,11 @@ class Obstacles:
         return gradient
 
     def create_sinusoidal_obstacles(self):
-        x = np.linspace(0, 4 * np.pi, self.width)
-        y = np.linspace(0, 4 * np.pi, self.height)
+        # x*pi -> with that x, the number of peaks and valleys can be altered
+        x = np.linspace(0, 5 * np.pi, self.width)
+        y = np.linspace(0, 5 * np.pi, self.height)
         x, y = np.meshgrid(x, y)
-        # Example of combining sine and cosine functions
+        # combining sine and cosine functions
         sinusoidal_obstacles = np.sin(x) * np.cos(y)
         # Normalize to 0-1 range
         sinusoidal_obstacles = (sinusoidal_obstacles - sinusoidal_obstacles.min()) / (sinusoidal_obstacles.max() - sinusoidal_obstacles.min())
