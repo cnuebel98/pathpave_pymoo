@@ -2,6 +2,7 @@ from pymoo.core.mutation import Mutation
 import copy
 import random
 import numpy as np
+from aStar import aStarPath
 
 class CopyMutation(Mutation):
     def __init__(self):
@@ -50,12 +51,18 @@ class ChangePartsMutation(Mutation):
                 if len(part_one) >= len(part_two):
                     # keep part one and find new random way to end cell
                     new_part = self._generate_random_path(problem, X_mut[i][0][start_point_for_swap], problem.end)
+                    # use AStar to generate the new path
+                    #new_part = aStarPath(width=problem.width, height=problem.height, start=X_mut[i][0][start_point_for_swap], end=problem.end, distanceMetric=False)
+
                     if new_part and part_one[-1] == new_part[0]:
                         new_part = new_part[1:]
                     new_genes = part_one + new_part
                 elif len(part_two) > len(part_one):
                     # keep part two and find new random way to start cell
                     new_part = self._generate_random_path(problem, X_mut[i][0][start_point_for_swap], problem.start)
+
+                    # use AStar to generate the new path
+                    #new_part = aStarPath(width=problem.width, height=problem.height, start=X_mut[i][0][start_point_for_swap], end=problem.start, distanceMetric=False)
 
                     # here we have to reverse the newly generated list before appending it to the part_two because we are finding a new way to the start
                     new_part_mirrored = new_part[::-1]
@@ -74,15 +81,9 @@ class ChangePartsMutation(Mutation):
     
     def _generate_random_path(self, problem, start, end):
         
-        # Your custom logic to generate a random path through the grid
-        # This could be similar to what was implemented in the GridWorldProblem
-        # Length between 20 and 100
         path = [start]
         current_pos = start
 
-        #print("Curr_Pos at beginnning of new path: " + str(current_pos))
-        #print("Final Position to reach: " + str(end))
-        
         while current_pos != end:
             row, col = current_pos
             # Generate all possible moves (up, down, left, right)
@@ -115,6 +116,5 @@ class ChangePartsMutation(Mutation):
             else:
                 break
         
-        #print("New Part: " + str(path))
         return path
     
