@@ -7,6 +7,11 @@ from pymoo.algorithms.moo.nsga2 import NSGA2
 from pymoo.algorithms.moo.nsga3 import NSGA3
 from pymoo.algorithms.moo.moead import MOEAD
 from pymoo.algorithms.moo.spea2 import SPEA2
+from pymoo.algorithms.moo.rnsga2 import RNSGA2
+from pymoo.algorithms.moo.rvea import RVEA
+from pymoo.algorithms.moo.age2 import AGEMOEA2
+from pymoo.algorithms.moo.age import AGEMOEA
+from pymoo.algorithms.moo.dnsga2 import DNSGA2
 
 from sampling import RandomSampling
 from mutations import CopyMutation, ChangePartsMutation, RectangleMutation, RadiusSamplingMutation
@@ -23,8 +28,11 @@ height = 50
 seed = 42
 
 # Set start and end points
-start = (height - 1, width // 2)  # Bottom middle
-end = (0, width // 2) 
+#start = (height - 1, width // 2)  # Bottom middle
+#end = (0, width // 2) 
+
+start = (0, 0)
+end = (width-1, height-1)
 
 # Set Crossover and Mutation Probabilities
 mutation_rate = 0.1
@@ -35,9 +43,13 @@ obstacles = Obstacles(width, height, seed)
 
 # Generate the desired obstacles on the map
 #obstacle_map = obstacles.create_random_obstacles()
-obstacle_map = obstacles.create_obstacles_bubble_in_middle()
+#obstacle_map = obstacles.create_obstacles_bubble_in_middle()
 #obstacle_map = obstacles.create_sinusoidal_obstacles()
 #obstacle_map = obstacles.create_gradient_obstacles()
+#obstacle_map = obstacles.create_radial_gradient_obstacles()
+#obstacle_map = obstacles.create_perlin_noise_obstacles()
+#obstacle_map = obstacles.create_random_walk_obstacles(num_walks=width*height)
+obstacle_map = obstacles.create_maze_obstacles()
 
 # Define the problem
 problem = GridWorldProblem(width, height, obstacle_map, start, end)
@@ -83,17 +95,59 @@ spea2 = SPEA2(pop_size=pop_size,
 
 moead = MOEAD(ref_dirs=ref_dirs,
               sampling=sampling, 
-              #eliminate_duplicates=eliminate_duplicates,
               crossover=crossover, 
               mutation=mutation,
               repair=repair)
+
+rnsga2 = RNSGA2(ref_points=ref_dirs,
+                pop_size=pop_size,
+                sampling=sampling,
+                crossover=crossover,
+                mutation=mutation,
+                repair = repair,
+                eliminate_duplicates=eliminate_duplicates)
+
+agemoea2 = AGEMOEA2(pop_size=pop_size,
+                    sampling=sampling,
+                    crossover=crossover,
+                    mutation=mutation,
+                    repair = repair,
+                    eliminate_duplicates=eliminate_duplicates)
+
+age = AGEMOEA(pop_size=pop_size,
+              sampling=sampling,
+              crossover=crossover,
+              mutation=mutation,
+              repair = repair,
+              eliminate_duplicates=eliminate_duplicates)
+
+# rvea returns an incorrect pareto front...
+rvea = RVEA(ref_dirs=ref_dirs,
+            pop_size=pop_size,
+            sampling=sampling,
+            crossover=crossover,
+            mutation=mutation,
+            repair=repair,
+            eliminate_duplicates=eliminate_duplicates)
+
+dnsga2 = DNSGA2(pop_size=pop_size, 
+                sampling=sampling, 
+                crossover=crossover, 
+                mutation=mutation,
+                repair=repair,
+                eliminate_duplicates=eliminate_duplicates)
 
 # Run optimization
 res = minimize(problem
                ,nsga2
                #,nsga3
                #,spea2
-               #,moead # moead doesn't want to take duplicate elimination
+               #,moead
+               #,rnsga2
+               #,rvea # there seems to be an issue here
+               #,agemoea2
+               #,age
+               #,dnsga2
                ,('n_eval', 1000)
                ,seed=seed
                ,verbose=True)
@@ -132,8 +186,8 @@ fig, ax = plt.subplots(figsize=(13, 8))
 
 # Display the obstacle weights in the grid
 #for i in range(height):
-  #  for j in range(width):
-    #    ax.text(j, i, f'{obstacles[i, j]:.2f}', va='center', ha='center', fontsize=12)
+#    for j in range(width):
+#        ax.text(j, i, f'{obstacles[i, j]:.2f}', va='center', ha='center', fontsize=12)
 
 # Plot the grid
 ax.imshow(obstacle_map, cmap='Greys', interpolation='nearest')
@@ -157,5 +211,5 @@ ax.set_yticks(np.arange(height))
 ax.set_xticklabels(np.arange(width))
 ax.set_yticklabels(np.arange(height))
 
-plt.title("GridWorld with Obstacle Weights and Final Paths")
+plt.title("Obstacle Environemnt")
 plt.show()

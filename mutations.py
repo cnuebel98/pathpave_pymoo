@@ -11,7 +11,6 @@ class CopyMutation(Mutation):
     def _do(self, problem, X, **kwargs):
         return copy.deepcopy(X)  # Return a deep copy of the individual
 
-
 class ChangePartsMutation(Mutation):
     '''This cuts the individual at two parts, and finds a new random way between the two cuts'''
     def __init__(self, mutation_rate):
