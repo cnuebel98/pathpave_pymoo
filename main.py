@@ -7,9 +7,14 @@ from pymoo.algorithms.moo.nsga2 import NSGA2
 from pymoo.algorithms.moo.nsga3 import NSGA3
 from pymoo.algorithms.moo.moead import MOEAD
 from pymoo.algorithms.moo.spea2 import SPEA2
+from pymoo.algorithms.moo.rnsga2 import RNSGA2
+from pymoo.algorithms.moo.rvea import RVEA
+from pymoo.algorithms.moo.age2 import AGEMOEA2
+from pymoo.algorithms.moo.age import AGEMOEA
+from pymoo.algorithms.moo.dnsga2 import DNSGA2
 
 from sampling import RandomSampling
-from mutations import CopyMutation, ChangePartsMutation
+from mutations import CopyMutation, ChangePartsMutation, RectangleMutation, RadiusSamplingMutation
 from crossovers import CopyCrossover, CrossingCrossover, onePointCrossover
 from problem import GridWorldProblem
 from duplicate_handling import EliminateDuplicates
@@ -23,8 +28,11 @@ height = 50
 seed = 42
 
 # Set start and end points
-start = (height - 1, width // 2)  # Bottom middle
-end = (0, width // 2) 
+#start = (height - 1, width // 2)  # Bottom middle
+#end = (0, width // 2) 
+
+start = (0, 0)
+end = (width-1, height-1)
 
 # Set Crossover and Mutation Probabilities
 mutation_rate = 0.1
@@ -35,32 +43,38 @@ obstacles = Obstacles(width, height, seed)
 
 # Generate the desired obstacles on the map
 #obstacle_map = obstacles.create_random_obstacles()
-obstacle_map = obstacles.create_obstacles_bubble_in_middle()
+#obstacle_map = obstacles.create_obstacles_bubble_in_middle()
 #obstacle_map = obstacles.create_sinusoidal_obstacles()
 #obstacle_map = obstacles.create_gradient_obstacles()
+#obstacle_map = obstacles.create_radial_gradient_obstacles()
+#obstacle_map = obstacles.create_perlin_noise_obstacles()
+#obstacle_map = obstacles.create_random_walk_obstacles(num_walks=width*height)
+obstacle_map = obstacles.create_maze_obstacles()
 
 # Define the problem
 problem = GridWorldProblem(width, height, obstacle_map, start, end)
 
 # Usage:
-pop_size = 10
+pop_size = 50
 sampling = RandomSampling(width, height, start, end)
 #crossover = CrossingCrossover(prob_crossover=prob_crossover)
 #crossover = CopyCrossover()
 crossover = onePointCrossover(prob_crossover, (width, height))
-mutation = ChangePartsMutation(mutation_rate=mutation_rate)
+#mutation = RectangleMutation(mutation_rate=mutation_rate)
+mutation = RadiusSamplingMutation(mutation_rate=mutation_rate, radius=int(0.1*height+0.1*width), problem=problem)
+#mutation = ChangePartsMutation(mutation_rate)
 eliminate_duplicates = EliminateDuplicates()
 repair = pathRepair()
 ref_dirs = get_reference_directions("das-dennis", 2, n_partitions=5)
 
 # Initialize the NSGA2 algorithm
-#Use the following line for Random Selection. Otherwise its binary Tournament Selection 
+#Use the following line for Random Selection in the algorithms. Otherwise its binary Tournament Selection 
 #selection=RandomSelection(), 
 
 nsga2 = NSGA2(pop_size=pop_size, 
               sampling=sampling, 
               crossover=crossover, 
-              mutation=mutation, 
+              mutation=mutation,
               repair=repair,
               eliminate_duplicates=eliminate_duplicates)
 
@@ -81,18 +95,60 @@ spea2 = SPEA2(pop_size=pop_size,
 
 moead = MOEAD(ref_dirs=ref_dirs,
               sampling=sampling, 
-              #eliminate_duplicates=eliminate_duplicates,
               crossover=crossover, 
               mutation=mutation,
               repair=repair)
 
+rnsga2 = RNSGA2(ref_points=ref_dirs,
+                pop_size=pop_size,
+                sampling=sampling,
+                crossover=crossover,
+                mutation=mutation,
+                repair = repair,
+                eliminate_duplicates=eliminate_duplicates)
+
+agemoea2 = AGEMOEA2(pop_size=pop_size,
+                    sampling=sampling,
+                    crossover=crossover,
+                    mutation=mutation,
+                    repair = repair,
+                    eliminate_duplicates=eliminate_duplicates)
+
+age = AGEMOEA(pop_size=pop_size,
+              sampling=sampling,
+              crossover=crossover,
+              mutation=mutation,
+              repair = repair,
+              eliminate_duplicates=eliminate_duplicates)
+
+# rvea returns an incorrect pareto front...
+rvea = RVEA(ref_dirs=ref_dirs,
+            pop_size=pop_size,
+            sampling=sampling,
+            crossover=crossover,
+            mutation=mutation,
+            repair=repair,
+            eliminate_duplicates=eliminate_duplicates)
+
+dnsga2 = DNSGA2(pop_size=pop_size, 
+                sampling=sampling, 
+                crossover=crossover, 
+                mutation=mutation,
+                repair=repair,
+                eliminate_duplicates=eliminate_duplicates)
+
 # Run optimization
 res = minimize(problem
-               #,nsga2
-               ,nsga3
+               ,nsga2
+               #,nsga3
                #,spea2
-               #,moead # moead doesn't want to take duplicate elimination
-               ,('n_eval', 100)
+               #,moead
+               #,rnsga2
+               #,rvea # there seems to be an issue here
+               #,agemoea2
+               #,age
+               #,dnsga2
+               ,('n_eval', 1000)
                ,seed=seed
                ,verbose=True)
 
@@ -130,8 +186,8 @@ fig, ax = plt.subplots(figsize=(13, 8))
 
 # Display the obstacle weights in the grid
 #for i in range(height):
-  #  for j in range(width):
-    #    ax.text(j, i, f'{obstacles[i, j]:.2f}', va='center', ha='center', fontsize=12)
+#    for j in range(width):
+#        ax.text(j, i, f'{obstacles[i, j]:.2f}', va='center', ha='center', fontsize=12)
 
 # Plot the grid
 ax.imshow(obstacle_map, cmap='Greys', interpolation='nearest')
@@ -155,5 +211,5 @@ ax.set_yticks(np.arange(height))
 ax.set_xticklabels(np.arange(width))
 ax.set_yticklabels(np.arange(height))
 
-plt.title("GridWorld with Obstacle Weights and Final Paths")
+plt.title("Obstacle Environemnt")
 plt.show()

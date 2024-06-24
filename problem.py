@@ -1,7 +1,8 @@
 import numpy as np
 import random
-
+import copy
 from pymoo.core.problem import Problem
+from typing import Tuple
 
 class GridWorldProblem(Problem):
     def __init__(self, width, height, obstacles, start, end):
@@ -14,14 +15,8 @@ class GridWorldProblem(Problem):
 
     def shift_obstacle_weight_randomly(self, current_grid, current_cell, next_cell): 
         # Takes the current Grid, and the field that has to be cleared as well as the
-        #print()
-        #print("Curr Grid:")
-        #print(current_grid)
-        #print("Current Cell: " + str(current_cell))
-        #print("Next Cell: " + str(next_cell))
-        #print("Weight to move: " + str(current_grid[next_cell[0], next_cell[1]]))
 
-        updated_grid = current_grid
+        updated_grid = copy.deepcopy(current_grid)
         
         # Generate all possible moves (up, down, left, right)
         row, col = next_cell
@@ -35,12 +30,9 @@ class GridWorldProblem(Problem):
             shift for shift in possible_neighbors 
             if 0 <= shift[0] < self.height and 0 <= shift[1] < self.width and shift != current_cell
         ]
-        #print("Valid_shifts: " + str(valid_shifts))
-        
+
         # Select one of the valid shifts randomly
         chosen_shift = random.choice(valid_shifts)
-        
-        #print("Chosen shift: " + str(chosen_shift))
         
         # Get the weight from next_cell
         weight_to_move = updated_grid[next_cell[0], next_cell[1]]
@@ -50,27 +42,18 @@ class GridWorldProblem(Problem):
 
         # shit weight randomly to possible neighbor
         updated_grid[chosen_shift[0], chosen_shift[1]] += weight_to_move
-        #print(updated_grid)
         # return updated grid
         return updated_grid
 
     def least_resistance_shift(self, current_grid, current_cell, next_cell): 
-        # Takes the current Grid, and the field that has to be cleared as well as the
-        #print()
-        #print("Curr Grid:")
-        #print(current_grid)
-        #print("Current Cell: " + str(current_cell))
-        #print("Next Cell: " + str(next_cell))
-        #print("Weight to move: " + str(current_grid[next_cell[0], next_cell[1]]))
-
-        updated_grid = current_grid
+        # Makes a copy to update the Obstacle grid
+        updated_grid = copy.deepcopy(current_grid)
         
         # Get the weight from next_cell
         weight_to_move = updated_grid[next_cell[0], next_cell[1]]
-        #print("Weight To Move: " + str(weight_to_move))
+        
         # Generate all possible moves (up, down, left, right)
         row, col = next_cell
-
         possible_neighbors = [
             (row-1, col), (row+1, col), 
             (row, col-1), (row, col+1)
@@ -85,11 +68,8 @@ class GridWorldProblem(Problem):
             if 0 <= row < self.height and 0 <= col < self.width:
                 # Ensure the neighboring cell is not the same as the current cell
                 if shift != current_cell:
-                    #print("Shift: " + str(shift))
                     valid_shifts.append(shift)  # Add the valid neighboring cell to the list
-        
-        #print(valid_shifts)
-        #print(len(valid_shifts))
+
         if len(valid_shifts) == 1:
             # if there is only one valid shift, we have to take it
             chosen_shift = valid_shifts[0]
@@ -101,19 +81,6 @@ class GridWorldProblem(Problem):
                 
                 if updated_grid[i[0], i[1]] < updated_grid[chosen_shift[0], chosen_shift[1]]:
                     chosen_shift = i
-
-                #print()
-                #print("Valid_shifts: " + str(i))
-                #print("X valid shift: " + str(i[0]))
-                #print("Y valid shift: " + str(i[1]))
-                #print("Weight of the Cell to Shift to: " + str(updated_grid[i[0], i[1]]))
-                #print()
-
-            # Select one of the valid shifts randomly
-            #print("chosen shift: " + str(updated_grid[chosen_shift[0], chosen_shift[1]]))
-        #print(updated_grid)
-        
-        #print("Chosen shift: " + str(chosen_shift))
         
         # Get the weight from next_cell
         weight_to_move = updated_grid[next_cell[0], next_cell[1]]
@@ -121,9 +88,119 @@ class GridWorldProblem(Problem):
         # delete weight from next_cell
         updated_grid[next_cell[0], next_cell[1]] = 0
 
-        # shit weight randomly to possible neighbor
+        # shit weight to the neighbor cell with the least amount of obstacle weight on it
         updated_grid[chosen_shift[0], chosen_shift[1]] += weight_to_move
-        #print(updated_grid)
+
+        return updated_grid
+
+    def split_weights_in_half_shift(self, current_grid: np.ndarray, current_cell: Tuple[int, int], next_cell: Tuple[int, int]) -> np.ndarray:
+        updated_grid = copy.deepcopy(current_grid)
+        weight_to_move = updated_grid[next_cell[0], next_cell[1]]
+
+        # Determine the direction of movement
+        direction = (next_cell[0] - current_cell[0], next_cell[1] - current_cell[1])
+
+        # Handle the special case where direction is (0, 0)
+        if direction == (0, 0):
+            direction = (-1, 0)  # Assume upward direction
+        
+        # Determine left and right neighbors based on movement direction
+        if direction == (0, 1):  # Moving right (x increases)
+            left_neighbor = (next_cell[0], next_cell[1] - 1)
+            right_neighbor = (next_cell[0], next_cell[1] + 1)
+        elif direction == (0, -1):  # Moving left (x decreases)
+            left_neighbor = (next_cell[0], next_cell[1] + 1)
+            right_neighbor = (next_cell[0], next_cell[1] - 1)
+        elif direction == (1, 0):  # Moving down (y increases)
+            left_neighbor = (next_cell[0] - 1, next_cell[1])
+            right_neighbor = (next_cell[0] + 1, next_cell[1])
+        elif direction == (-1, 0):  # Moving up (y decreases)
+            left_neighbor = (next_cell[0] + 1, next_cell[1])
+            right_neighbor = (next_cell[0] - 1, next_cell[1])
+        else:
+            raise ValueError("Invalid movement direction")
+
+        # Check for wall conditions and split weight accordingly
+        left_in_bounds = 0 <= left_neighbor[0] < self.height and 0 <= left_neighbor[1] < self.width
+        right_in_bounds = 0 <= right_neighbor[0] < self.height and 0 <= right_neighbor[1] < self.width
+
+        if left_in_bounds and right_in_bounds:
+            half_weight = weight_to_move / 2
+            updated_grid[left_neighbor[0], left_neighbor[1]] += half_weight
+            updated_grid[right_neighbor[0], right_neighbor[1]] += half_weight
+        elif left_in_bounds:
+            updated_grid[left_neighbor[0], left_neighbor[1]] += weight_to_move
+        elif right_in_bounds:
+            updated_grid[right_neighbor[0], right_neighbor[1]] += weight_to_move
+        else:
+            raise ValueError("Both left and right neighbors are out of bounds")
+
+        updated_grid[next_cell[0], next_cell[1]] = 0
+        
+        return updated_grid
+
+    def split_weights_in_thirds_shift(self, current_grid: np.ndarray, current_cell: Tuple[int, int], next_cell: Tuple[int, int]) -> np.ndarray:
+        updated_grid = copy.deepcopy(current_grid)
+        weight_to_move = updated_grid[next_cell[0], next_cell[1]]
+
+        # Determine the direction of movement
+        direction = (next_cell[0] - current_cell[0], next_cell[1] - current_cell[1])
+
+        # Handle the special case where direction is (0, 0)
+        if direction == (0, 0):
+            direction = (-1, 0)  # Assume upward direction
+
+        # Debugging output for direction and cells
+        #print(f"Current cell: {current_cell}, Next cell: {next_cell}, Direction: {direction}")
+
+        # Determine neighbors based on movement direction
+        if direction == (0, 1):  # Moving right (x increases)
+            left_neighbor = (next_cell[0] - 1, next_cell[1])
+            right_neighbor = (next_cell[0] + 1, next_cell[1])
+            forward_neighbor = (next_cell[0], next_cell[1] + 1)  # Moving right (y increases)
+        elif direction == (0, -1):  # Moving left (x decreases)
+            left_neighbor = (next_cell[0] + 1, next_cell[1])
+            right_neighbor = (next_cell[0] - 1, next_cell[1])
+            forward_neighbor = (next_cell[0], next_cell[1] - 1)  # Moving left (y decreases)
+        elif direction == (1, 0):  # Moving down (y increases)
+            left_neighbor = (next_cell[0], next_cell[1] + 1)
+            right_neighbor = (next_cell[0], next_cell[1] - 1)
+            forward_neighbor = (next_cell[0] + 1, next_cell[1])  # Moving down (x increases)
+        elif direction == (-1, 0):  # Moving up (y decreases)
+            left_neighbor = (next_cell[0], next_cell[1] - 1)
+            right_neighbor = (next_cell[0], next_cell[1] + 1)
+            forward_neighbor = (next_cell[0] - 1, next_cell[1])  # Moving up (x decreases)
+        else:
+            raise ValueError("Invalid movement direction")
+
+        # Check for wall conditions and split weight accordingly
+        left_in_bounds = 0 <= left_neighbor[0] < self.height and 0 <= left_neighbor[1] < self.width
+        right_in_bounds = 0 <= right_neighbor[0] < self.height and 0 <= right_neighbor[1] < self.width
+        forward_in_bounds = 0 <= forward_neighbor[0] < self.height and 0 <= forward_neighbor[1] < self.width
+
+        #print(f"Left neighbor: {left_neighbor}, In bounds: {left_in_bounds}")
+        #print(f"Right neighbor: {right_neighbor}, In bounds: {right_in_bounds}")
+        #print(f"Forward neighbor: {forward_neighbor}, In bounds: {forward_in_bounds}")
+
+        if left_in_bounds and right_in_bounds and forward_in_bounds:
+            third_weight = weight_to_move / 3
+            updated_grid[left_neighbor[0], left_neighbor[1]] += third_weight
+            updated_grid[right_neighbor[0], right_neighbor[1]] += third_weight
+            updated_grid[forward_neighbor[0], forward_neighbor[1]] += third_weight
+        elif left_in_bounds and right_in_bounds:
+            half_weight = weight_to_move / 2
+            updated_grid[left_neighbor[0], left_neighbor[1]] += half_weight
+            updated_grid[right_neighbor[0], right_neighbor[1]] += half_weight
+        elif left_in_bounds:
+            updated_grid[left_neighbor[0], left_neighbor[1]] += weight_to_move
+        elif right_in_bounds:
+            updated_grid[right_neighbor[0], right_neighbor[1]] += weight_to_move
+        elif forward_in_bounds:
+            updated_grid[forward_neighbor[0], forward_neighbor[1]] += weight_to_move
+        else:
+            raise ValueError("All neighbors are out of bounds")
+
+        updated_grid[next_cell[0], next_cell[1]] = 0
         
         return updated_grid
 
@@ -149,9 +226,11 @@ class GridWorldProblem(Problem):
                         next_cell = x[i][j]
 
                     obstacle_weights_summed += current_obstacles[x[i][j][0], x[i][j][1]]
+
                     #new_obstacles = self.shift_obstacle_weight_randomly(current_obstacles, current_cell, next_cell)
-                    new_obstacles = self.least_resistance_shift(current_obstacles, current_cell, next_cell)
-                    
+                    #new_obstacles = self.least_resistance_shift(current_obstacles, current_cell, next_cell)
+                    #new_obstacles = self.split_weights_in_half_shift(current_obstacles, current_cell, next_cell)
+                    new_obstacles = self.split_weights_in_thirds_shift(current_obstacles, current_cell, next_cell)
                     current_obstacles = new_obstacles
 
             steps = len(x[0])
