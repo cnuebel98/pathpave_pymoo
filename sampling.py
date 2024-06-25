@@ -1,6 +1,5 @@
 from pymoo.core.sampling import Sampling
 import numpy as np
-from repairs import repairPath
 
 class RandomSampling(Sampling):
     def __init__(self, width, height, start, end):
@@ -52,4 +51,4 @@ class RandomSampling(Sampling):
             else:
                 break  # If no valid moves are left, break the loop
         #print("Random Path for initial Pop: " + str(path))
-        return repairPath(path)
+        return path

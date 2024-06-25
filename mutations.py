@@ -3,7 +3,6 @@ import copy
 import random
 import numpy as np
 from aStar import aStarPath
-from repairs import repairPath
 
 class CopyMutation(Mutation):
     def __init__(self):
@@ -65,7 +64,7 @@ class ChangePartsMutation(Mutation):
                         new_part_mirrored = new_part_mirrored[:-1]
                     new_genes = new_part_mirrored + part_two
                     
-                X_mut[i][0] = repairPath(new_genes)
+                X_mut[i][0] = new_genes
         return np.array(X_mut)
     
     def _generate_random_path(self, problem, start, end):
@@ -161,7 +160,7 @@ class RectangleMutation(Mutation):
                 
                 new_genes = part_one + new_part + part_two
 
-                X_mut[i][0] = repairPath(new_genes)
+                X_mut[i][0] = new_genes
         return np.array(X_mut)
     
     def generate_semi_random_path(self, width_bounds, height_bounds, start, end):
@@ -237,7 +236,7 @@ class RadiusSamplingMutation(Mutation):
                 new_part_two = self.greedy_path_find(sampled_point, part_two[0], self.problem)
                 
                 new_genes = part_one + new_part_one + [sampled_point] + new_part_two + part_two
-                X_mut[i][0] = repairPath(new_genes)
+                X_mut[i][0] = new_genes
                 
         return np.array(X_mut)
     

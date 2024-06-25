@@ -64,8 +64,8 @@ crossover = onePointCrossover(prob_crossover, (width, height))
 mutation = RadiusSamplingMutation(mutation_rate=mutation_rate, radius=int(0.1*height+0.1*width), problem=problem)
 #mutation = ChangePartsMutation(mutation_rate)
 eliminate_duplicates = EliminateDuplicates()
-#repair = pathRepair()
-repair = errorRepair()
+repair = pathRepair()
+#repair = errorRepair()
 ref_dirs = get_reference_directions("das-dennis", 2, n_partitions=5)
 
 # Initialize the NSGA2 algorithm
