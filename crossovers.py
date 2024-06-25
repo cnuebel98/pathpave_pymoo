@@ -2,7 +2,7 @@ from pymoo.core.crossover import Crossover
 import copy
 from aStar import aStarPath
 import numpy as np
-from pathRepair import repairPath
+from repairs import repairPath
 
 class CopyCrossover(Crossover):
     def __init__(self):

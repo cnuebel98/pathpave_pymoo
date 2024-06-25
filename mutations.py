@@ -3,6 +3,7 @@ import copy
 import random
 import numpy as np
 from aStar import aStarPath
+from repairs import repairPath
 
 class CopyMutation(Mutation):
     def __init__(self):
@@ -64,7 +65,7 @@ class ChangePartsMutation(Mutation):
                         new_part_mirrored = new_part_mirrored[:-1]
                     new_genes = new_part_mirrored + part_two
                     
-                X_mut[i][0] = new_genes
+                X_mut[i][0] = repairPath(new_genes)
         return np.array(X_mut)
     
     def _generate_random_path(self, problem, start, end):
@@ -128,10 +129,10 @@ class RectangleMutation(Mutation):
                 
                 # make the cut to the length on 20% of the individual
                 # how many genes are 20% of the individual?
-                len_of_cutted_part = int(0.2*len(X_mut[i][0]))
+                len_of_cut_part = int(0.2*len(X_mut[i][0]))
 
-                x = random.randint(1, individual_length-1-len_of_cutted_part)
-                y = x + len_of_cutted_part
+                x = random.randint(1, individual_length-1-len_of_cut_part)
+                y = x + len_of_cut_part
                 
                 if x < y:
                     start_point_for_swap = x
@@ -160,7 +161,7 @@ class RectangleMutation(Mutation):
                 
                 new_genes = part_one + new_part + part_two
 
-                X_mut[i][0] = new_genes
+                X_mut[i][0] = repairPath(new_genes)
         return np.array(X_mut)
     
     def generate_semi_random_path(self, width_bounds, height_bounds, start, end):
@@ -212,9 +213,9 @@ class RadiusSamplingMutation(Mutation):
             if random.random() < self.mutation_rate:
                 individual_length = len(X_mut[i][0])
                 
-                len_of_cutted_part = int(0.2 * len(X_mut[i][0]))
-                x = random.randint(1, individual_length - 1 - len_of_cutted_part)
-                y = x + len_of_cutted_part
+                len_of_cut_part = int(0.2 * len(X_mut[i][0]))
+                x = random.randint(1, individual_length - 1 - len_of_cut_part)
+                y = x + len_of_cut_part
                 
                 if x < y:
                     start_point_for_swap = x
@@ -236,7 +237,7 @@ class RadiusSamplingMutation(Mutation):
                 new_part_two = self.greedy_path_find(sampled_point, part_two[0], self.problem)
                 
                 new_genes = part_one + new_part_one + [sampled_point] + new_part_two + part_two
-                X_mut[i][0] = new_genes
+                X_mut[i][0] = repairPath(new_genes)
                 
         return np.array(X_mut)
     
@@ -253,9 +254,6 @@ class RadiusSamplingMutation(Mutation):
             if 0 <= rand_y < problem.height and 0 <= rand_x < problem.width:
                 if (rand_y, rand_x) not in individual:
                     return (rand_y, rand_x)
-
-    def manhattan_distance(self, point1, point2):
-        return abs(point1[0] - point2[0]) + abs(point1[1] - point2[1])
     
 
     def manhattan_distance(self, point1, point2):

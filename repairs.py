@@ -1,5 +1,15 @@
 from pymoo.core.repair import Repair
 
+class errorRepair(Repair):
+    def _do(self, problem, X, **kwargs):
+        for i in range(len(X)):
+            for j in range(len(X[i])):
+                path = X[i][j]
+                for coord in path:
+                    if path.count(coord) > 1:
+                        raise ValueError(f"The coordinate {coord} appeard more than once in the path, suggesting a circle or ineffective movement\nPath: {path}")
+        return X
+
 class pathRepair(Repair):
     """Removes all circles and useless movements from path."""
 
@@ -19,4 +29,3 @@ def repairPath(path: list) -> list:
             return repairPath(newPath)
     else:
         return path
-                
