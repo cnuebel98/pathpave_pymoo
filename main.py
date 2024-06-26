@@ -18,7 +18,7 @@ from mutations import CopyMutation, ChangePartsMutation, RectangleMutation, Radi
 from crossovers import CopyCrossover, CrossingCrossover, onePointCrossover
 from problem import GridWorldProblem
 from duplicate_handling import EliminateDuplicates
-from pathRepair import pathRepair
+from repairs import errorRepair, pathRepair
 
 from pymoo.util.ref_dirs import get_reference_directions
 from obstacles import Obstacles
@@ -65,6 +65,7 @@ mutation = RadiusSamplingMutation(mutation_rate=mutation_rate, radius=int(0.1*he
 #mutation = ChangePartsMutation(mutation_rate)
 eliminate_duplicates = EliminateDuplicates()
 repair = pathRepair()
+#repair = errorRepair()
 ref_dirs = get_reference_directions("das-dennis", 2, n_partitions=5)
 
 # Initialize the NSGA2 algorithm

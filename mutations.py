@@ -128,10 +128,10 @@ class RectangleMutation(Mutation):
                 
                 # make the cut to the length on 20% of the individual
                 # how many genes are 20% of the individual?
-                len_of_cutted_part = int(0.2*len(X_mut[i][0]))
+                len_of_cut_part = int(0.2*len(X_mut[i][0]))
 
-                x = random.randint(1, individual_length-1-len_of_cutted_part)
-                y = x + len_of_cutted_part
+                x = random.randint(1, individual_length-1-len_of_cut_part)
+                y = x + len_of_cut_part
                 
                 if x < y:
                     start_point_for_swap = x
@@ -212,9 +212,9 @@ class RadiusSamplingMutation(Mutation):
             if random.random() < self.mutation_rate:
                 individual_length = len(X_mut[i][0])
                 
-                len_of_cutted_part = int(0.2 * len(X_mut[i][0]))
-                x = random.randint(1, individual_length - 1 - len_of_cutted_part)
-                y = x + len_of_cutted_part
+                len_of_cut_part = int(0.2 * len(X_mut[i][0]))
+                x = random.randint(1, individual_length - 1 - len_of_cut_part)
+                y = x + len_of_cut_part
                 
                 if x < y:
                     start_point_for_swap = x
@@ -253,9 +253,6 @@ class RadiusSamplingMutation(Mutation):
             if 0 <= rand_y < problem.height and 0 <= rand_x < problem.width:
                 if (rand_y, rand_x) not in individual:
                     return (rand_y, rand_x)
-
-    def manhattan_distance(self, point1, point2):
-        return abs(point1[0] - point2[0]) + abs(point1[1] - point2[1])
     
 
     def manhattan_distance(self, point1, point2):

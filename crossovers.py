@@ -2,7 +2,6 @@ from pymoo.core.crossover import Crossover
 import copy
 from aStar import aStarPath
 import numpy as np
-from pathRepair import repairPath
 
 class CopyCrossover(Crossover):
     def __init__(self):
@@ -84,8 +83,8 @@ class onePointCrossover(Crossover):
             path.reverse()
             newSecondPath += path[:-1]
             newSecondPath += crossoverIndividuals[0][cutoffPoint:]
-            newFirstPath = repairPath(newFirstPath)
-            newSecondPath = repairPath(newSecondPath)
+            newFirstPath = newFirstPath
+            newSecondPath = newSecondPath
 
 
 
@@ -101,8 +100,8 @@ class onePointCrossover(Crossover):
             newFirstPath += crossoverIndividuals[1][cutoffPoint:]
             newSecondPath = crossoverIndividuals[1][:cutoffPoint]
             newSecondPath += crossoverIndividuals[0][cutoffPoint:]
-            newFirstPath = repairPath(newFirstPath)
-            newSecondPath = repairPath(newSecondPath)
+            newFirstPath = newFirstPath
+            newSecondPath = newSecondPath
 
             convFirst = np.empty(1, dtype=object)
             convFirst[:] = [newFirstPath]
