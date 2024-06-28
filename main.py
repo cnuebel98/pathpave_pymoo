@@ -16,17 +16,17 @@ from pymoo.algorithms.moo.dnsga2 import DNSGA2
 
 from sampling import RandomSampling
 from mutations import CopyMutation, ChangePartsMutation, RectangleMutation, RadiusSamplingMutation
-from crossovers import CopyCrossover, CrossingCrossover, onePointCrossover
+from crossovers import CopyCrossover, CrossingCrossover, OnePointCrossover
 from problem import GridWorldProblem
 from duplicate_handling import EliminateDuplicates
-from repairs import errorRepair, pathRepair
+from repairs import ErrorRepair, PathRepair
 
 from pymoo.util.ref_dirs import get_reference_directions
 from obstacles import Obstacles
 
-from logger import logger
+from logger import Logger
 #Create logger
-log = logger()
+log = Logger()
 
 # Define parameters
 width = 50
@@ -45,8 +45,8 @@ parser.add_argument("--neval", help="Number of function evaluations", type=int)
 args = parser.parse_args()
 #print(args.map)
 # Set start and end points
-#start = (height - 1, width // 2)  # Bottom middle
-#end = (0, width // 2)
+start = (height - 1, width // 2)  # Bottom middle
+end = (0, width // 2)
 
 # Set height and width if defined
 if args.w != None:
@@ -54,8 +54,8 @@ if args.w != None:
 if args.h != None:
     height = args.h
 
-start = (0, 0)
-end = (width-1, height-1)
+#start = (0, 0)
+#end = (width-1, height-1)
 
 # Set Crossover and Mutation Probabilities
 mutation_rate = 0.1
@@ -70,7 +70,7 @@ maps = [obstacles.create_random_obstacles(), obstacles.create_obstacles_bubble_i
 if args.map != None:
     obstacle_map = maps[args.map]
 else:
-    obstacle_map = obstacles.create_maze_obstacles()
+    obstacle_map = obstacles.create_gradient_obstacles()
  
 # Define the problem
 problem = GridWorldProblem(width, height, obstacle_map, start, end)
@@ -83,11 +83,11 @@ else:
 
 sampling = RandomSampling(width, height, start, end)
 
-crossovers = [CrossingCrossover(prob_crossover=prob_crossover), CopyCrossover(), onePointCrossover(prob_crossover, (width, height))]
+crossovers = [CrossingCrossover(prob_crossover=prob_crossover), CopyCrossover(), OnePointCrossover(prob_crossover, (width, height))]
 if args.cross != None:
     crossover = crossovers[args.cross]
 else:
-    crossover = onePointCrossover(prob_crossover, (width, height))
+    crossover = OnePointCrossover(prob_crossover, (width, height))
 
 mutations = [RadiusSamplingMutation(mutation_rate=mutation_rate, radius=int(0.1*height+0.1*width), problem=problem), RectangleMutation(mutation_rate=mutation_rate), ChangePartsMutation(mutation_rate)]
 
@@ -97,7 +97,7 @@ else:
     mutation = RadiusSamplingMutation(mutation_rate=mutation_rate, radius=int(0.1*height+0.1*width), problem=problem)
 
 eliminate_duplicates = EliminateDuplicates()
-repair = pathRepair()
+repair = PathRepair()
 #repair = errorRepair()
 ref_dirs = get_reference_directions("das-dennis", 2, n_partitions=5)
 
@@ -111,7 +111,6 @@ algorithms = [NSGA2(pop_size=pop_size, sampling=sampling, crossover=crossover, m
               RNSGA2(ref_points=ref_dirs, pop_size=pop_size, sampling=sampling, crossover=crossover, mutation=mutation, repair = repair, eliminate_duplicates=eliminate_duplicates),
               AGEMOEA(pop_size=pop_size, sampling=sampling, crossover=crossover, mutation=mutation, repair = repair, eliminate_duplicates=eliminate_duplicates),
               AGEMOEA2(pop_size=pop_size, sampling=sampling, crossover=crossover, mutation=mutation, repair = repair, eliminate_duplicates=eliminate_duplicates),
-              RVEA(ref_dirs=ref_dirs, pop_size=pop_size, sampling=sampling, crossover=crossover, mutation=mutation, repair=repair, eliminate_duplicates=eliminate_duplicates),
               DNSGA2(pop_size=pop_size, sampling=sampling, crossover=crossover, mutation=mutation,repair=repair, eliminate_duplicates=eliminate_duplicates)]
 
 if args.algo != None:
@@ -135,9 +134,8 @@ res = minimize(problem
 
 # Extract the Pareto front data
 pareto_front = res.F
-
 #LOGGING
-log.createLogFile(obstacles, width, height, algorithm, crossover, mutation, pop_size, n_eval)
+log.createLogFile(obstacles, width, height, algorithm, crossover, mutation, pop_size, n_eval, sampling, repair)
 
 #print(pareto_front[:, 0])
 
@@ -196,4 +194,4 @@ ax.set_yticklabels(np.arange(height))
 plt.title("Obstacle Environemnt")
 # plt.show()
 plt.savefig(log.logPath+"./mapPlot")
-log.log(paths)
+log.log(paths, pareto_front[:, 0], pareto_front[:, 1])

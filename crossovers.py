@@ -48,7 +48,7 @@ class CrossingCrossover(Crossover):
         return X_crossed
     
 
-class onePointCrossover(Crossover):
+class OnePointCrossover(Crossover):
     def __init__(self, prob_crossover, mapSize: tuple):
         super().__init__(2, 2, prob=prob_crossover)
         self.width, self.height = mapSize
