@@ -23,6 +23,11 @@ from repairs import errorRepair, pathRepair
 
 from pymoo.util.ref_dirs import get_reference_directions
 from obstacles import Obstacles
+
+from logger import logger
+#Create logger
+log = logger()
+
 # Define parameters
 width = 50
 height = 50
@@ -84,7 +89,7 @@ if args.cross != None:
 else:
     crossover = onePointCrossover(prob_crossover, (width, height))
 
-mutations = [RectangleMutation(mutation_rate=mutation_rate), RadiusSamplingMutation(mutation_rate=mutation_rate, radius=int(0.1*height+0.1*width), problem=problem), ChangePartsMutation(mutation_rate)]
+mutations = [RadiusSamplingMutation(mutation_rate=mutation_rate, radius=int(0.1*height+0.1*width), problem=problem), RectangleMutation(mutation_rate=mutation_rate), ChangePartsMutation(mutation_rate)]
 
 if args.mut != None:
     mutation = mutations[args.mut]
@@ -131,6 +136,9 @@ res = minimize(problem
 # Extract the Pareto front data
 pareto_front = res.F
 
+#LOGGING
+log.createLogFile(obstacles, width, height, algorithm, crossover, mutation, pop_size, n_eval)
+
 #print(pareto_front[:, 0])
 
 # Plot the Pareto front
@@ -143,9 +151,10 @@ plt.ylabel('Weight Shifted')
 plt.title('Pareto Front from NSGA-II')
 plt.legend()
 plt.grid(True)
-
 # Show the plot
-plt.show()
+#plt.show()
+# Save plot
+plt.savefig(log.logPath+"./paretoPlot")
 # Extract the paths from res.X
 paths = res.X.squeeze().tolist()
 
@@ -185,4 +194,6 @@ ax.set_xticklabels(np.arange(width))
 ax.set_yticklabels(np.arange(height))
 
 plt.title("Obstacle Environemnt")
-plt.show()
+# plt.show()
+plt.savefig(log.logPath+"./mapPlot")
+log.log(paths)

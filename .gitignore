@@ -1,3 +1,6 @@
+# Ignore log data
+log/
+
 # Ignore virtual environment
 pythpave_pymoo/
 pyvenv.cfg
