@@ -1,7 +1,7 @@
 from pymoo.core.repair import Repair
 from aStar import aStarPath
 
-class errorRepair(Repair):
+class ErrorRepair(Repair):
     def _do(self, problem, X, **kwargs):
         for i in range(len(X)):
             for j in range(len(X[i])):
@@ -11,7 +11,7 @@ class errorRepair(Repair):
                         raise ValueError(f"The coordinate {coord} appeard more than once in the path, suggesting a circle or ineffective movement\nPath: {path}")
         return X
 
-class pathRepair(Repair):
+class PathRepair(Repair):
     """Removes all circles and useless movements from path\nChecks for conncted paths."""
 
     def _do(self, problem, X, **kwargs):

@@ -9,8 +9,10 @@ class Obstacles:
         self.width = width
         self.height = height
         self.seed = seed
+        self.name = None
 
     def create_random_obstacles(self):
+        self.name = "randomObstacles"
         # Generate obstacles
         np.random.seed(self.seed)
         # randomly
@@ -18,6 +20,7 @@ class Obstacles:
         return random_obstacles
     
     def create_obstacles_bubble_in_middle(self):
+        self.name = "bubbleInMiddle"
         # Center of the grid
         center_x, center_y = self.width // 2, self.height // 2
 
@@ -42,6 +45,7 @@ class Obstacles:
         return obstacle_weights
     
     def create_gradient_obstacles(self):
+        self.name = "gradientObstacles"
         gradient = np.zeros((self.height, self.width))
 
         for i in range(self.height):
@@ -62,6 +66,7 @@ class Obstacles:
         return gradient
 
     def create_sinusoidal_obstacles(self):
+        self.name = "sinusoidalObstacles"
         # x*pi -> with that x, the number of peaks and valleys can be altered
         x = np.linspace(0, 5 * np.pi, self.width)
         y = np.linspace(0, 5 * np.pi, self.height)
@@ -73,6 +78,7 @@ class Obstacles:
         return sinusoidal_obstacles
     
     def create_radial_gradient_obstacles(self):
+        self.name = "radialGradientObstacles"
         # Center of the grid
         center_x, center_y = self.width // 2, self.height // 2
 
@@ -91,6 +97,7 @@ class Obstacles:
         return radial_gradient
     
     def create_random_walk_obstacles(self, num_walks, walk_length=1000, p=0.5):
+        self.name = "randomWalkObstacles"
         # Initialize obstacle map
         obstacles = np.zeros((self.height, self.width))
         for _ in range(num_walks):
@@ -105,6 +112,7 @@ class Obstacles:
         return obstacles
     
     def create_perlin_noise_obstacles(self, scale=10.0, octaves=6, persistence=0.5, lacunarity=2.0):
+        self.name = "perlinNoiseObstacles"
         # Generate Perlin noise using numpy and adjust parameters as needed
         noise = np.zeros((self.height, self.width))
         for i in range(self.height):
@@ -124,6 +132,7 @@ class Obstacles:
 
 
     def create_maze_obstacles(self):
+        self.name = "mazeObstacles"
         # Initialize maze with all walls
         maze = np.ones((self.height, self.width), dtype=int)
 
