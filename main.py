@@ -44,15 +44,16 @@ parser.add_argument("--pop", help="Defines population size", type=int)
 parser.add_argument("--neval", help="Number of function evaluations", type=int)
 args = parser.parse_args()
 #print(args.map)
-# Set start and end points
-start = (height - 1, width // 2)  # Bottom middle
-end = (0, width // 2)
 
 # Set height and width if defined
 if args.w != None:
     width = args.w
 if args.h != None:
     height = args.h
+
+# Set start and end points
+start = (height - 1, width // 2)  # Bottom middle
+end = (0, width // 2)
 
 #start = (0, 0)
 #end = (width-1, height-1)
