@@ -64,12 +64,15 @@ prob_crossover = 0.8
 
 # Create an instance of the Obstacles class
 obstacles = Obstacles(width, height, seed)
-maps = [obstacles.create_random_obstacles(), obstacles.create_obstacles_bubble_in_middle(), obstacles.create_sinusoidal_obstacles(), obstacles.create_gradient_obstacles(),
-        obstacles.create_radial_gradient_obstacles(), obstacles.create_perlin_noise_obstacles(), obstacles.create_random_walk_obstacles(num_walks=width*height), obstacles.create_maze_obstacles()]
+maps = [obstacles.create_random_obstacles, obstacles.create_obstacles_bubble_in_middle, obstacles.create_sinusoidal_obstacles, obstacles.create_gradient_obstacles,
+        obstacles.create_radial_gradient_obstacles, obstacles.create_perlin_noise_obstacles, obstacles.create_random_walk_obstacles, obstacles.create_maze_obstacles]
 
 # Set map if defined
 if args.map != None:
-    obstacle_map = maps[args.map]
+    if (maps[args.map].__name__ != "create_random_walk_obstacles"):
+        obstacle_map = maps[args.map]()
+    else:
+        obstacle_map = maps[args.map](num_walks=width*height)
 else:
     obstacle_map = obstacles.create_gradient_obstacles()
  
