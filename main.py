@@ -193,5 +193,5 @@ ax.set_yticklabels(np.arange(height))
 
 plt.title("Obstacle Environemnt")
 # plt.show()
-plt.savefig(log.logPath+"./mapPlot")
+plt.savefig(log.logPath+"/mapPlot")
 log.log(paths, pareto_front[:, 0], pareto_front[:, 1])
