@@ -152,7 +152,7 @@ plt.grid(True)
 # Show the plot
 #plt.show()
 # Save plot
-plt.savefig(log.logPath+"./paretoPlot")
+plt.savefig(log.logPath+"/paretoPlot")
 # Extract the paths from res.X
 paths = res.X.squeeze().tolist()
 
