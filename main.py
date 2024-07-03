@@ -33,169 +33,190 @@ width = 50
 height = 50
 seed = 42
 
-parser = argparse.ArgumentParser()
-parser.add_argument("--map", help="Defines used map", type=int)
-parser.add_argument("--w", help="Defines width of the map", type=int)
-parser.add_argument("--h", help="Defines height of the map", type=int)
-parser.add_argument("--algo", help="Defines used algorithm", type=int)
-parser.add_argument("--cross", help="Defines used crossover", type=int)
-parser.add_argument("--mut", help="Defines used mutation", type=int)
-parser.add_argument("--pop", help="Defines population size", type=int)
-parser.add_argument("--neval", help="Number of function evaluations", type=int)
-args = parser.parse_args()
-#print(args.map)
+def main():
 
-# Set height and width if defined
-if args.w != None:
-    width = args.w
-if args.h != None:
-    height = args.h
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--map", help="Defines used map", type=int)
+    parser.add_argument("--w", help="Defines width of the map", type=int)
+    parser.add_argument("--h", help="Defines height of the map", type=int)
+    parser.add_argument("--algo", help="Defines used algorithm", type=int)
+    parser.add_argument("--cross", help="Defines used crossover", type=int)
+    parser.add_argument("--mut", help="Defines used mutation", type=int)
+    parser.add_argument("--pop", help="Defines population size", type=int)
+    parser.add_argument("--neval", help="Number of function evaluations", type=int)
+    parser.add_argument("--shift", help="Decides which method is used to shift the weight", type=int)
+    parser.add_argument("--seed", help="Determines seed for semi random values", type=int)
+    args = parser.parse_args()
+    simulation(args.map, args.w, args.h, args.algo, args.cross, args.mut, args.pop, args.neval, args.shift, args.seed)
+    #print(args.map)
 
-# Set start and end points
-start = (height - 1, width // 2)  # Bottom middle
-end = (0, width // 2)
+def simulation(m, w, h, a, c, mut, p, n, sm, s):
+# Set shifiting method if defined
+    if sm != None:
+        shiftingMethod = sm
+    else:
+        shiftingMethod = 0
 
-#start = (0, 0)
-#end = (width-1, height-1)
+    if s != None:
+        seed = s
+    else:
+        seed = 420
 
-# Set Crossover and Mutation Probabilities
-mutation_rate = 0.1
-prob_crossover = 0.8
+    # Set height and width if defined
+    if w != None:
+        width = w
+    if h != None:
+        height = h
+
+    # Set start and end points
+    start = (height - 1, width // 2)  # Bottom middle
+    end = (0, width // 2)
+
+    #start = (0, 0)
+    #end = (width-1, height-1)
+
+    # Set Crossover and Mutation Probabilities
+    mutation_rate = 0.1
+    prob_crossover = 0.8
 
 # Create an instance of the Obstacles class
-obstacles = Obstacles(width, height, seed)
-maps = [obstacles.create_random_obstacles, obstacles.create_obstacles_bubble_in_middle, obstacles.create_sinusoidal_obstacles, obstacles.create_gradient_obstacles,
-        obstacles.create_radial_gradient_obstacles, obstacles.create_perlin_noise_obstacles, obstacles.create_random_walk_obstacles, obstacles.create_maze_obstacles]
+    obstacles = Obstacles(width, height, seed)
+    maps = [obstacles.create_random_obstacles, obstacles.create_obstacles_bubble_in_middle, obstacles.create_sinusoidal_obstacles, obstacles.create_gradient_obstacles,
+            obstacles.create_radial_gradient_obstacles, obstacles.create_perlin_noise_obstacles, obstacles.create_random_walk_obstacles, obstacles.create_maze_obstacles]
 
 # Set map if defined
-if args.map != None:
-    if (maps[args.map].__name__ != "create_random_walk_obstacles"):
-        obstacle_map = maps[args.map]()
+    if m != None:
+        if (maps[m].__name__ != "create_random_walk_obstacles"):
+            obstacle_map = maps[m]()
+        else:
+            obstacle_map = maps[m](num_walks=width*height)
     else:
-        obstacle_map = maps[args.map](num_walks=width*height)
-else:
-    obstacle_map = obstacles.create_gradient_obstacles()
+        obstacle_map = obstacles.create_gradient_obstacles()
  
-# Define the problem
-problem = GridWorldProblem(width, height, obstacle_map, start, end)
+    # Define the problem
+    problem = GridWorldProblem(width, height, obstacle_map, start, end, shiftingMethod)
 
-# Usage:
-if args.pop != None:
-    pop_size = args.pop
-else:
-    pop_size = 50
+    # Usage:
+    if p != None:
+        pop_size = p
+    else:
+        pop_size = 50
 
-sampling = RandomSampling(width, height, start, end)
+    sampling = RandomSampling(width, height, start, end)
 
-crossovers = [CrossingCrossover(prob_crossover=prob_crossover), CopyCrossover(), OnePointCrossover(prob_crossover, (width, height))]
-if args.cross != None:
-    crossover = crossovers[args.cross]
-else:
-    crossover = OnePointCrossover(prob_crossover, (width, height))
+    crossovers = [CrossingCrossover(prob_crossover=prob_crossover), CopyCrossover(), OnePointCrossover(prob_crossover, (width, height))]
+    if c != None:
+        crossover = crossovers[c]
+    else:
+        crossover = OnePointCrossover(prob_crossover, (width, height))
 
-mutations = [RadiusSamplingMutation(mutation_rate=mutation_rate, radius=int(0.1*height+0.1*width), problem=problem), RectangleMutation(mutation_rate=mutation_rate), ChangePartsMutation(mutation_rate)]
+    mutations = [RadiusSamplingMutation(mutation_rate=mutation_rate, radius=int(0.1*height+0.1*width), problem=problem), RectangleMutation(mutation_rate=mutation_rate), ChangePartsMutation(mutation_rate)]
 
-if args.mut != None:
-    mutation = mutations[args.mut]
-else:
-    mutation = RadiusSamplingMutation(mutation_rate=mutation_rate, radius=int(0.1*height+0.1*width), problem=problem)
+    if mut != None:
+        mutation = mutations[mut]
+    else:
+        mutation = RadiusSamplingMutation(mutation_rate=mutation_rate, radius=int(0.1*height+0.1*width), problem=problem)
 
-eliminate_duplicates = EliminateDuplicates()
-repair = PathRepair()
-#repair = errorRepair()
-ref_dirs = get_reference_directions("das-dennis", 2, n_partitions=5)
+    eliminate_duplicates = EliminateDuplicates()
+    repair = PathRepair()
+    #repair = errorRepair()
+    ref_dirs = get_reference_directions("das-dennis", 2, n_partitions=5)
 
-# Initialize the NSGA2 algorithm
-#Use the following line for Random Selection in the algorithms. Otherwise its binary Tournament Selection 
-#selection=RandomSelection(), 
-algorithms = [NSGA2(pop_size=pop_size, sampling=sampling, crossover=crossover, mutation=mutation,repair=repair, eliminate_duplicates=eliminate_duplicates),
-              NSGA3(ref_dirs=ref_dirs, pop_size=pop_size, sampling=sampling, crossover=crossover, mutation=mutation, repair=repair,eliminate_duplicates=eliminate_duplicates),
-              SPEA2(pop_size=pop_size, sampling=sampling, crossover=crossover, mutation=mutation, repair=repair, eliminate_duplicates=eliminate_duplicates),
-              MOEAD(ref_dirs=ref_dirs, sampling=sampling, crossover=crossover, mutation=mutation, repair=repair),
-              RNSGA2(ref_points=ref_dirs, pop_size=pop_size, sampling=sampling, crossover=crossover, mutation=mutation, repair = repair, eliminate_duplicates=eliminate_duplicates),
-              AGEMOEA(pop_size=pop_size, sampling=sampling, crossover=crossover, mutation=mutation, repair = repair, eliminate_duplicates=eliminate_duplicates),
-              AGEMOEA2(pop_size=pop_size, sampling=sampling, crossover=crossover, mutation=mutation, repair = repair, eliminate_duplicates=eliminate_duplicates),
-              DNSGA2(pop_size=pop_size, sampling=sampling, crossover=crossover, mutation=mutation,repair=repair, eliminate_duplicates=eliminate_duplicates)]
-
-if args.algo != None:
-    algorithm = algorithms[args.algo]
-else:
-    algorithm = algorithms[0]
-
-if args.neval != None:
-    n_eval = args.neval
-else:
-    n_eval = 1000
-# Run optimization
-res = minimize(problem
-               ,algorithm
-               ,('n_eval', n_eval)
-               ,seed=seed
-               ,verbose=True)
+    # Initialize the NSGA2 algorithm
+    #Use the following line for Random Selection in the algorithms. Otherwise its binary Tournament Selection 
+    #selection=RandomSelection(), 
+    algorithms = [NSGA2(pop_size=pop_size, sampling=sampling, crossover=crossover, mutation=mutation,repair=repair, eliminate_duplicates=eliminate_duplicates),
+                  NSGA3(ref_dirs=ref_dirs, pop_size=pop_size, sampling=sampling, crossover=crossover, mutation=mutation, repair=repair,eliminate_duplicates=eliminate_duplicates),
+                  SPEA2(pop_size=pop_size, sampling=sampling, crossover=crossover, mutation=mutation, repair=repair, eliminate_duplicates=eliminate_duplicates),
+                  MOEAD(ref_dirs=ref_dirs, sampling=sampling, crossover=crossover, mutation=mutation, repair=repair),
+                  RNSGA2(ref_points=ref_dirs, pop_size=pop_size, sampling=sampling, crossover=crossover, mutation=mutation, repair = repair, eliminate_duplicates=eliminate_duplicates),
+                  AGEMOEA(pop_size=pop_size, sampling=sampling, crossover=crossover, mutation=mutation, repair = repair, eliminate_duplicates=eliminate_duplicates),
+                  AGEMOEA2(pop_size=pop_size, sampling=sampling, crossover=crossover, mutation=mutation, repair = repair, eliminate_duplicates=eliminate_duplicates),
+                  DNSGA2(pop_size=pop_size, sampling=sampling, crossover=crossover, mutation=mutation,repair=repair, eliminate_duplicates=eliminate_duplicates)]
 
 
-#print("res.pop: " + str(res.F))
+    if a != None:
+        algorithm = algorithms[a]
+    else:
+        algorithm = algorithms[0]
 
-# Extract the Pareto front data
-pareto_front = res.F
-#LOGGING
-log.createLogFile(obstacles, width, height, algorithm, crossover, mutation, pop_size, n_eval, sampling, repair)
+    if n != None:
+        n_eval = n
+    else:
+        n_eval = 1000
+    # Run optimization
+    res = minimize(problem
+                   ,algorithm
+                   ,('n_eval', n_eval)
+                   ,seed=seed
+                   ,verbose=False)
 
-#print(pareto_front[:, 0])
 
-# Plot the Pareto front
-plt.figure(figsize=(10, 8))
-plt.scatter(pareto_front[:, 0], pareto_front[:, 1], label='Pareto Front', color='b')
+    #print("res.pop: " + str(res.F))
 
-# Customize the plot
-plt.xlabel('Steps Taken')
-plt.ylabel('Weight Shifted')
-plt.title('Pareto Front from NSGA-II')
-plt.legend()
-plt.grid(True)
-# Show the plot
-#plt.show()
-# Save plot
-plt.savefig(log.logPath+"/paretoPlot")
-# Extract the paths from res.X
-paths = res.X.squeeze().tolist()
+    # Extract the Pareto front data
+    pareto_front = res.F
+    #LOGGING
+    log.createLogFile(obstacles, width, height, algorithm, crossover, mutation, pop_size, n_eval, sampling, repair, shiftingMethod, seed)
 
-# Print the paths
-#print("Paths:")
-#for path in paths:
-#    print(path)
+    #print(pareto_front[:, 0])
 
-# Create a plot for the final grid with paths
-fig, ax = plt.subplots(figsize=(13, 8))
+    # Plot the Pareto front
+    plt.figure(figsize=(10, 8))
+    plt.scatter(pareto_front[:, 0], pareto_front[:, 1], label='Pareto Front', color='b')
 
-# Display the obstacle weights in the grid
-#for i in range(height):
-#    for j in range(width):
-#        ax.text(j, i, f'{obstacles[i, j]:.2f}', va='center', ha='center', fontsize=12)
+    # Customize the plot
+    plt.xlabel('Steps Taken')
+    plt.ylabel('Weight Shifted')
+    plt.title('Pareto Front from NSGA-II')
+    plt.legend()
+    plt.grid(True)
+    # Show the plot
+    #plt.show()
+    # Save plot
+    plt.savefig(log.logPath+"/paretoPlot")
+    # Extract the paths from res.X
+    paths = res.X.squeeze().tolist()
 
-# Plot the grid
-ax.imshow(obstacle_map, cmap='Greys', interpolation='nearest')
+    # Print the paths
+    #print("Paths:")
+    #for path in paths:
+    #    print(path)
 
-# Mark the start and end points
-ax.plot(start[1], start[0], 'go', markersize=10, label='Start')  # Start point
-ax.plot(end[1], end[0], 'ro', markersize=10, label='End')        # End point
+    # Create a plot for the final grid with paths
+    fig, ax = plt.subplots(figsize=(13, 8))
 
-# Plot the paths of the final population
-if len(paths[0]) != 2:
-    for path in paths:
-        path_y, path_x = zip(*path)
+    # Display the obstacle weights in the grid
+    #for i in range(height):
+    #    for j in range(width):
+    #        ax.text(j, i, f'{obstacles[i, j]:.2f}', va='center', ha='center', fontsize=12)
+
+    # Plot the grid
+    ax.imshow(obstacle_map, cmap='Greys', interpolation='nearest')
+
+    # Mark the start and end points
+    ax.plot(start[1], start[0], 'go', markersize=10, label='Start')  # Start point
+    ax.plot(end[1], end[0], 'ro', markersize=10, label='End')        # End point
+
+    # Plot the paths of the final population
+    if len(paths[0]) != 2:
+        for path in paths:
+            path_y, path_x = zip(*path)
+            ax.plot(path_x, path_y, marker='o')
+    elif len(paths[0]) == 2:
+        path_y, path_x = zip(*paths)
         ax.plot(path_x, path_y, marker='o')
-elif len(paths[0]) == 2:
-    path_y, path_x = zip(*paths)
-    ax.plot(path_x, path_y, marker='o')
 
-# Set the ticks and labels
-ax.set_xticks(np.arange(width))
-ax.set_yticks(np.arange(height))
-ax.set_xticklabels(np.arange(width))
-ax.set_yticklabels(np.arange(height))
+    # Set the ticks and labels
+    ax.set_xticks(np.arange(width))
+    ax.set_yticks(np.arange(height))
+    ax.set_xticklabels(np.arange(width))
+    ax.set_yticklabels(np.arange(height))
 
-plt.title("Obstacle Environemnt")
-# plt.show()
-plt.savefig(log.logPath+"/mapPlot")
-log.log(paths, pareto_front[:, 0], pareto_front[:, 1])
+    plt.title("Obstacle Environemnt")
+    # plt.show()
+    plt.savefig(log.logPath+"/mapPlot")
+    log.log(paths, pareto_front[:, 0], pareto_front[:, 1])
+
+if __name__ == "__main__":
+    main()
