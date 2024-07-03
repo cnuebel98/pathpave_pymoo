@@ -5,13 +5,14 @@ from pymoo.core.problem import Problem
 from typing import Tuple
 
 class GridWorldProblem(Problem):
-    def __init__(self, width, height, obstacles, start, end):
+    def __init__(self, width, height, obstacles, start, end, shiftingMethod):
         super().__init__(n_var=1, n_obj=2, n_constr=0)
         self.width = width
         self.height = height
         self.obstacles = obstacles
         self.start = start
         self.end = end
+        self.shiftingMethod = shiftingMethod
 
     def shift_obstacle_weight_randomly(self, current_grid, current_cell, next_cell): 
         # Takes the current Grid, and the field that has to be cleared as well as the
@@ -226,11 +227,14 @@ class GridWorldProblem(Problem):
                         next_cell = x[i][j]
 
                     obstacle_weights_summed += current_obstacles[x[i][j][0], x[i][j][1]]
-
-                    #new_obstacles = self.shift_obstacle_weight_randomly(current_obstacles, current_cell, next_cell)
-                    #new_obstacles = self.least_resistance_shift(current_obstacles, current_cell, next_cell)
-                    #new_obstacles = self.split_weights_in_half_shift(current_obstacles, current_cell, next_cell)
-                    new_obstacles = self.split_weights_in_thirds_shift(current_obstacles, current_cell, next_cell)
+                    if self.shiftingMethod == 0:
+                        new_obstacles = self.shift_obstacle_weight_randomly(current_obstacles, current_cell, next_cell)
+                    elif self.shiftingMethod == 1:
+                        new_obstacles = self.least_resistance_shift(current_obstacles, current_cell, next_cell)
+                    elif self.shiftingMethod == 2:
+                        new_obstacles = self.split_weights_in_half_shift(current_obstacles, current_cell, next_cell)
+                    else:
+                        new_obstacles = self.split_weights_in_thirds_shift(current_obstacles, current_cell, next_cell)
                     current_obstacles = new_obstacles
 
             steps = len(x[0])
