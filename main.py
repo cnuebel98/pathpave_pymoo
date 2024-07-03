@@ -119,10 +119,10 @@ def simulation(m, w, h, a, c, mut, p, n, sm, s):
     else:
         mutation = RadiusSamplingMutation(mutation_rate=mutation_rate, radius=int(0.2*height+0.2*width), problem=problem)
 
-        eliminate_duplicates = EliminateDuplicates()
-        repair = PathRepair()
-        #repair = errorRepair()
-        ref_dirs = get_reference_directions("das-dennis", 2, n_partitions=5)
+    eliminate_duplicates = EliminateDuplicates()
+    repair = PathRepair()
+    #repair = errorRepair()
+    ref_dirs = get_reference_directions("das-dennis", 2, n_partitions=5)
 
     # Initialize the NSGA2 algorithm
     #Use the following line for Random Selection in the algorithms. Otherwise its binary Tournament Selection 
