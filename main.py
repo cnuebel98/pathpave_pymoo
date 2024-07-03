@@ -13,6 +13,8 @@ from pymoo.algorithms.moo.rvea import RVEA
 from pymoo.algorithms.moo.age2 import AGEMOEA2
 from pymoo.algorithms.moo.age import AGEMOEA
 from pymoo.algorithms.moo.dnsga2 import DNSGA2
+from pymoo.algorithms.moo.sms import SMSEMOA
+from pymoo.algorithms.moo.ctaea import CTAEA
 
 from sampling import RandomSampling
 from mutations import CopyMutation, ChangePartsMutation, RectangleMutation, RadiusSamplingMutation
@@ -110,17 +112,17 @@ def simulation(m, w, h, a, c, mut, p, n, sm, s):
     else:
         crossover = OnePointCrossover(prob_crossover, (width, height))
 
-    mutations = [RadiusSamplingMutation(mutation_rate=mutation_rate, radius=int(0.1*height+0.1*width), problem=problem), RectangleMutation(mutation_rate=mutation_rate), ChangePartsMutation(mutation_rate)]
+    mutations = [RadiusSamplingMutation(mutation_rate=mutation_rate, radius=int(0.2*height+0.2*width), problem=problem), RectangleMutation(mutation_rate=mutation_rate), ChangePartsMutation(mutation_rate)]
 
     if mut != None:
         mutation = mutations[mut]
     else:
-        mutation = RadiusSamplingMutation(mutation_rate=mutation_rate, radius=int(0.1*height+0.1*width), problem=problem)
+        mutation = RadiusSamplingMutation(mutation_rate=mutation_rate, radius=int(0.2*height+0.2*width), problem=problem)
 
-    eliminate_duplicates = EliminateDuplicates()
-    repair = PathRepair()
-    #repair = errorRepair()
-    ref_dirs = get_reference_directions("das-dennis", 2, n_partitions=5)
+        eliminate_duplicates = EliminateDuplicates()
+        repair = PathRepair()
+        #repair = errorRepair()
+        ref_dirs = get_reference_directions("das-dennis", 2, n_partitions=5)
 
     # Initialize the NSGA2 algorithm
     #Use the following line for Random Selection in the algorithms. Otherwise its binary Tournament Selection 
@@ -132,7 +134,9 @@ def simulation(m, w, h, a, c, mut, p, n, sm, s):
                   RNSGA2(ref_points=ref_dirs, pop_size=pop_size, sampling=sampling, crossover=crossover, mutation=mutation, repair = repair, eliminate_duplicates=eliminate_duplicates),
                   AGEMOEA(pop_size=pop_size, sampling=sampling, crossover=crossover, mutation=mutation, repair = repair, eliminate_duplicates=eliminate_duplicates),
                   AGEMOEA2(pop_size=pop_size, sampling=sampling, crossover=crossover, mutation=mutation, repair = repair, eliminate_duplicates=eliminate_duplicates),
-                  DNSGA2(pop_size=pop_size, sampling=sampling, crossover=crossover, mutation=mutation,repair=repair, eliminate_duplicates=eliminate_duplicates)]
+                  DNSGA2(pop_size=pop_size, sampling=sampling, crossover=crossover, mutation=mutation,repair=repair, eliminate_duplicates=eliminate_duplicates),
+                  SMSEMOA(pop_size=pop_size, sampling=sampling, crossover=crossover, mutation=mutation,repair=repair, eliminate_duplicates=eliminate_duplicates),
+                  CTAEA(ref_dirs=ref_dirs, sampling=sampling, crossover=crossover, mutation=mutation, eliminate_duplicates=eliminate_duplicates)]
 
 
     if a != None:
@@ -167,8 +171,8 @@ def simulation(m, w, h, a, c, mut, p, n, sm, s):
 
     # Customize the plot
     plt.xlabel('Steps Taken')
-    plt.ylabel('Weight Shifted')
-    plt.title('Pareto Front from NSGA-II')
+    plt.ylabel('Total Weight Shifted')
+    plt.title('Pareto Front')
     plt.legend()
     plt.grid(True)
     # Show the plot
