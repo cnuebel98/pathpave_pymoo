@@ -233,7 +233,7 @@ class GridWorldProblem(Problem):
                         new_obstacles = self.least_resistance_shift(current_obstacles, current_cell, next_cell)
                     elif self.shiftingMethod == 2:
                         new_obstacles = self.split_weights_in_half_shift(current_obstacles, current_cell, next_cell)
-                    else:
+                    elif self.shiftingMethod == 3:
                         new_obstacles = self.split_weights_in_thirds_shift(current_obstacles, current_cell, next_cell)
                     current_obstacles = new_obstacles
 

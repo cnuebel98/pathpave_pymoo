@@ -13,7 +13,7 @@ class Logger():
         if not os.path.exists("./log"):
             os.mkdir("./log")
     
-    def createLogFile(self, map, width, height, algorithm, crossover, mutation, popsize, n_eval, samplingFunction, repairFunction, shiftingMethod, seed):
+    def createLogFile(self, map, width, height, algorithm, crossover, mutation, popsize, n_eval, samplingFunction, repairFunction, shiftingMethod, seed, totalTime):
         """Creates a logfile for the path."""
         self.logName = f"{map.name}_{width}_{height}_{algorithm.__class__.__name__}_{crossover.__class__.__name__}_{mutation.__class__.__name__}_{popsize}_{n_eval}_{samplingFunction.__class__.__name__}_{repairFunction.__class__.__name__}_{shiftingMethod}_{seed}"
         self.logPath = self.basePath + "/" + self.logName
@@ -40,6 +40,7 @@ class Logger():
         self.samplingFunction = samplingFunction.__class__.__name__
         self.repairFunction = repairFunction.__class__.__name__
         self.seed = seed
+        self.time = totalTime
 
         #TODO: Make this better, just temporary solution
         if shiftingMethod == 0:
@@ -70,6 +71,7 @@ class Logger():
             "steps": list(steps),
             "shiftedWeight": list(shiftedWeight),
             "paths": paths,
+            "time": self.time
         }
         frame = pd.DataFrame(log_obj)
         frame.to_csv("./log/results.csv", mode='a', index = False, header=False)

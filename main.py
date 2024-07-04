@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np 
 import argparse
+import time
 
 from pymoo.optimize import minimize
 from pymoo.operators.selection.rnd import RandomSelection
@@ -53,6 +54,7 @@ def main():
     #print(args.map)
 
 def simulation(m, w, h, a, c, mut, p, n, sm, s):
+    startingTime = time.time()
 # Set shifiting method if defined
     if sm != None:
         shiftingMethod = sm
@@ -155,30 +157,30 @@ def simulation(m, w, h, a, c, mut, p, n, sm, s):
                    ,seed=seed
                    ,verbose=False)
 
-
+    totalTime = time.time() - startingTime
     #print("res.pop: " + str(res.F))
 
     # Extract the Pareto front data
     pareto_front = res.F
     #LOGGING
-    log.createLogFile(obstacles, width, height, algorithm, crossover, mutation, pop_size, n_eval, sampling, repair, shiftingMethod, seed)
+    log.createLogFile(obstacles, width, height, algorithm, crossover, mutation, pop_size, n_eval, sampling, repair, shiftingMethod, seed, totalTime)
 
     #print(pareto_front[:, 0])
 
     # Plot the Pareto front
-    plt.figure(figsize=(10, 8))
-    plt.scatter(pareto_front[:, 0], pareto_front[:, 1], label='Pareto Front', color='b')
+    #plt.figure(figsize=(10, 8))
+    #plt.scatter(pareto_front[:, 0], pareto_front[:, 1], label='Pareto Front', color='b')
 
     # Customize the plot
-    plt.xlabel('Steps Taken')
-    plt.ylabel('Total Weight Shifted')
-    plt.title('Pareto Front')
-    plt.legend()
-    plt.grid(True)
+    #plt.xlabel('Steps Taken')
+    #plt.ylabel('Total Weight Shifted')
+    #plt.title('Pareto Front')
+    #plt.legend()
+    #plt.grid(True)
     # Show the plot
     #plt.show()
     # Save plot
-    plt.savefig(log.logPath+"/paretoPlot")
+    #plt.savefig(log.logPath+"/paretoPlot")
     # Extract the paths from res.X
     paths = res.X.squeeze().tolist()
 
@@ -188,7 +190,7 @@ def simulation(m, w, h, a, c, mut, p, n, sm, s):
     #    print(path)
 
     # Create a plot for the final grid with paths
-    fig, ax = plt.subplots(figsize=(13, 8))
+    #fig, ax = plt.subplots(figsize=(13, 8))
 
     # Display the obstacle weights in the grid
     #for i in range(height):
@@ -196,30 +198,30 @@ def simulation(m, w, h, a, c, mut, p, n, sm, s):
     #        ax.text(j, i, f'{obstacles[i, j]:.2f}', va='center', ha='center', fontsize=12)
 
     # Plot the grid
-    ax.imshow(obstacle_map, cmap='Greys', interpolation='nearest')
+    #ax.imshow(obstacle_map, cmap='Greys', interpolation='nearest')
 
     # Mark the start and end points
-    ax.plot(start[1], start[0], 'go', markersize=10, label='Start')  # Start point
-    ax.plot(end[1], end[0], 'ro', markersize=10, label='End')        # End point
+    #ax.plot(start[1], start[0], 'go', markersize=10, label='Start')  # Start point
+    #ax.plot(end[1], end[0], 'ro', markersize=10, label='End')        # End point
 
     # Plot the paths of the final population
-    if len(paths[0]) != 2:
-        for path in paths:
-            path_y, path_x = zip(*path)
-            ax.plot(path_x, path_y, marker='o')
-    elif len(paths[0]) == 2:
-        path_y, path_x = zip(*paths)
-        ax.plot(path_x, path_y, marker='o')
+    #if len(paths[0]) != 2:
+    #    for path in paths:
+    #        path_y, path_x = zip(*path)
+    #        ax.plot(path_x, path_y, marker='o')
+    #elif len(paths[0]) == 2:
+    #    path_y, path_x = zip(*paths)
+    #    ax.plot(path_x, path_y, marker='o')
 
     # Set the ticks and labels
-    ax.set_xticks(np.arange(width))
-    ax.set_yticks(np.arange(height))
-    ax.set_xticklabels(np.arange(width))
-    ax.set_yticklabels(np.arange(height))
+    #ax.set_xticks(np.arange(width))
+    #ax.set_yticks(np.arange(height))
+    #ax.set_xticklabels(np.arange(width))
+    #ax.set_yticklabels(np.arange(height))
 
-    plt.title("Obstacle Environemnt")
-    # plt.show()
-    plt.savefig(log.logPath+"/mapPlot")
+    #plt.title("Obstacle Environemnt")
+    ## plt.show()
+    #plt.savefig(log.logPath+"/mapPlot")
     log.log(paths, pareto_front[:, 0], pareto_front[:, 1])
 
 if __name__ == "__main__":

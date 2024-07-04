@@ -4,16 +4,21 @@ import random
 from multiprocessing import Process, Pool, freeze_support, get_context
 
 def main():
-    maps = [0,1,2,3,4,5,6,7]
-    width = 100
-    height = 100
-    algorithms = [0,1,2,3,4,5,6,7]
-    crossovers = [0,1,2]
-    mutations = [0,1,2]
+    #maps = [0,1,2,3,4,5,6,7]
+    maps = [4]
+    width = 50
+    height = 50
+    #algorithms = [0,1,2,3,4,5,6,7]
+    algorithms = [0]
+    #crossovers = [0,1,2]
+    crossovers = [2]
+    #mutations = [0,1,2]
+    mutations = [0]
     pop = 100
-    n_eval = 100000
-    #n_eval = 1000
-    shiftingMethods = [0,1,2]
+    #n_eval = 100000
+    n_eval = 50000
+    #shiftingMethods = [0,1,2,3]
+    shiftingMethods = [1]
     seeds = [42, 69, 420, 1080, 1337, 617991, 799403, 302116, 
              414881, 718149, 659294, 327967, 4978, 167867, 247737, 890651, 
              853402, 996794, 489263, 972757, 269475, 282126, 397562, 400459, 
@@ -22,8 +27,8 @@ def main():
     callMultiprocessing(combinations)
 
 def callMultiprocessing(combinations: list):
-    with get_context("fork").Pool(48) as pool:
-        result = pool.map(multiProcessSimulations, combinations)
+    with get_context("spawn").Pool(48) as pool:
+        pool.map(multiProcessSimulations, combinations)
         pool.close()
 
 def getCombinations(maps, width, height, algorithms, crossovers, mutations, pop, n_eval, shiftingMethods, seeds) -> list:
