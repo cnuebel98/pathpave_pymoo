@@ -21,8 +21,6 @@ class Logger():
         if os.path.exists(self.logPath):
             shutil.rmtree(self.logPath)
         os.mkdir(self.logPath)
-        f = open(self.logPath+"/"+self.logName+".json", 'w')
-        f.close()
 
         #Check if csv exists
         if not os.path.exists("./log/results.csv"):
