@@ -162,3 +162,35 @@ class Obstacles:
                 # Remove wall between current cell and neighbor
                 maze[y + dy, x + dx] = 0
                 self._recursive_dfs(maze, nx, ny)
+
+    def create_meandering_river_obstacles(self):
+        self.name = "meanderingRiverObstacles"
+        # Initialize the obstacle map
+        obstacles = np.zeros((self.height, self.width))
+
+        # Parameters for the river path
+        river_width = 7
+        t = np.linspace(0, 1, self.height)
+        x_center = self.width / 2
+        amplitude = self.width / 3
+
+        # Generate smooth S-shaped path
+        x_path = x_center + amplitude * np.sin(2 * np.pi * t)
+
+        # Mark the river path on the obstacle map
+        for y, x in enumerate(x_path):
+            x_start = int(x - river_width / 2)
+            x_end = int(x + river_width / 2)
+            obstacles[y, max(x_start, 0):min(x_end, self.width)] = 1
+
+        # Apply Gaussian filter to create gradient effect
+        obstacles = gaussian_filter(obstacles, sigma=3)
+
+        # Invert colors: black parts white and white parts black
+        obstacles = 1 - obstacles
+
+        # Normalize to 0-1 range
+        obstacles = (obstacles - np.min(obstacles)) / (np.max(obstacles) - np.min(obstacles))
+
+        return obstacles
+        

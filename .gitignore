@@ -1,6 +1,11 @@
 # Ignore log data
 log/
 
+#Ignore Visualization stuff and Map Pictures
+vis_all_in_one.py
+Map_pics/
+.DS_Store
+
 # Ignore virtual environment
 pythpave_pymoo/
 pyvenv.cfg
