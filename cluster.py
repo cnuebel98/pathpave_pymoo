@@ -14,7 +14,10 @@ def main():
     n_eval = 100000
     #n_eval = 1000
     shiftingMethods = [0,1,2]
-    seeds = random.sample(range(1, 1000000), 31)
+    seeds = [776539, 741274, 576063, 191154, 443089, 617991, 799403, 302116, 
+             414881, 718149, 659294, 327967, 4978, 167867, 247737, 890651, 
+             853402, 996794, 489263, 972757, 269475, 282126, 397562, 400459, 
+             353156, 202975, 684799, 190391, 591868, 296699, 856797]
     combinations = getCombinations(maps, width, height, algorithms, crossovers, mutations, pop, n_eval, shiftingMethods, seeds)
     callMultiprocessing(combinations)
 
