@@ -24,7 +24,7 @@ def main():
 def callMultiprocessing(combinations: list):
     with get_context("fork").Pool(48) as pool:
         result = pool.map(multiProcessSimulations, combinations)
-        pool.close
+        pool.close()
 
 def getCombinations(maps, width, height, algorithms, crossovers, mutations, pop, n_eval, shiftingMethods, seeds) -> list:
     combinations = []
