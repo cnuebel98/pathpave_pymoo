@@ -2,6 +2,7 @@ from pymoo.core.crossover import Crossover
 import copy
 from aStar import aStarPath
 import numpy as np
+from greedyPath import findGreedyPath
 
 class CopyCrossover(Crossover):
     def __init__(self):
@@ -111,3 +112,64 @@ class OnePointCrossover(Crossover):
             X[1] = convSecond
 
         return X
+    
+class OnePointGreedyDirectionCrossover(Crossover):
+    def __init__(self, prob_crossover, mapSize: tuple):
+        super().__init__(2, 2, prob=prob_crossover)
+        self.width, self.height = mapSize
+
+    def _do(self, problem, X, **kwargs):
+        #print(f"X: {X}")
+        crossoverIndividuals = []
+        for individual_list in X:
+            for individual in individual_list:
+                crossoverIndividuals.append(individual[0])
+        
+        #You have to check length of individuals to set maximum cutoff point
+        if len(crossoverIndividuals[0])<=len(crossoverIndividuals[1]):
+            maxLength = len(crossoverIndividuals[0])
+        else:
+            maxLength = len(crossoverIndividuals[1])
+
+        #Randomly get cutoff point
+        cutoffPoint = np.random.randint(1, maxLength-1)
+
+        #Get points in each individual
+        firstPoint = crossoverIndividuals[0][cutoffPoint]
+        secondPoint = crossoverIndividuals[1][cutoffPoint]
+        if firstPoint != secondPoint:
+            #TODO: Get map parameters here
+            path = findGreedyPath(self.width, self.height, firstPoint, secondPoint)
+            newFirstPath = crossoverIndividuals[0][:cutoffPoint]
+            newFirstPath += path[:-1]
+            newFirstPath += crossoverIndividuals[1][cutoffPoint:]
+
+            path.reverse()
+            newSecondPath = crossoverIndividuals[1][:cutoffPoint]
+            newSecondPath+= path[:-1]
+            newSecondPath+= crossoverIndividuals[0][cutoffPoint:]
+
+            convFirst = np.empty(1, dtype=object)
+            convFirst[:] = [newFirstPath]
+            X[0] = convFirst
+            convSecond = np.empty(1, dtype=object)
+            convSecond[:] = [newSecondPath]
+            X[1] = convSecond
+            #print(X)
+        else:
+            newFirstPath = crossoverIndividuals[0][:cutoffPoint]
+            newFirstPath += crossoverIndividuals[1][cutoffPoint:]
+            newSecondPath = crossoverIndividuals[1][:cutoffPoint]
+            newSecondPath += crossoverIndividuals[0][cutoffPoint:]
+            newFirstPath = newFirstPath
+            newSecondPath = newSecondPath   
+
+            convFirst = np.empty(1, dtype=object)
+            convFirst[:] = [newFirstPath]
+            X[0] = convFirst
+            convSecond = np.empty(1, dtype=object)
+            convSecond[:] = [newSecondPath]
+            X[1] = convSecond
+
+        return X
+        

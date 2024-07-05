@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np 
 import argparse
 import time
+import random
 
 from pymoo.optimize import minimize
 from pymoo.operators.selection.rnd import RandomSelection
@@ -17,12 +18,12 @@ from pymoo.algorithms.moo.dnsga2 import DNSGA2
 from pymoo.algorithms.moo.sms import SMSEMOA
 from pymoo.algorithms.moo.ctaea import CTAEA
 
-from sampling import RandomSampling
+from sampling import RandomSampling, RandomDirectionSampling
 from mutations import CopyMutation, ChangePartsMutation, RectangleMutation, RadiusSamplingMutation
-from crossovers import CopyCrossover, CrossingCrossover, OnePointCrossover
+from crossovers import CopyCrossover, CrossingCrossover, OnePointCrossover, OnePointGreedyDirectionCrossover
 from problem import GridWorldProblem
 from duplicate_handling import EliminateDuplicates
-from repairs import ErrorRepair, PathRepair
+from repairs import ErrorRepair, PathRepair, DirectionPathRepair
 
 from pymoo.util.ref_dirs import get_reference_directions
 from obstacles import Obstacles
@@ -63,7 +64,11 @@ def simulation(m, w, h, a, c, mut, p, n, sm, s):
 
     if s != None:
         seed = s
+        random.seed(s)
+        np.random.seed(s)
     else:
+        random.seed(420)
+        np.random.seed(420)
         seed = 420
 
     # Set height and width if defined
@@ -106,15 +111,16 @@ def simulation(m, w, h, a, c, mut, p, n, sm, s):
     else:
         pop_size = 50
 
-    sampling = RandomSampling(width, height, start, end)
+    #sampling = RandomSampling(width, height, start, end)
+    sampling = RandomDirectionSampling(width, height, start, end)
 
-    crossovers = [CrossingCrossover(prob_crossover=prob_crossover), CopyCrossover(), OnePointCrossover(prob_crossover, (width, height))]
+    crossovers = [CrossingCrossover(prob_crossover=prob_crossover), CopyCrossover(), OnePointCrossover(prob_crossover, (width, height)), OnePointGreedyDirectionCrossover(prob_crossover, (width, height))]
     if c != None:
         crossover = crossovers[c]
     else:
         crossover = OnePointCrossover(prob_crossover, (width, height))
 
-    mutations = [RadiusSamplingMutation(mutation_rate=mutation_rate, radius=int(0.2*height+0.2*width), problem=problem), RectangleMutation(mutation_rate=mutation_rate), ChangePartsMutation(mutation_rate)]
+    mutations = [RadiusSamplingMutation(mutation_rate=mutation_rate, radius=int(0.2*height+0.2*width), problem=problem), RectangleMutation(mutation_rate=mutation_rate), ChangePartsMutation(mutation_rate), CopyMutation()]
 
     if mut != None:
         mutation = mutations[mut]
@@ -122,7 +128,8 @@ def simulation(m, w, h, a, c, mut, p, n, sm, s):
         mutation = RadiusSamplingMutation(mutation_rate=mutation_rate, radius=int(0.2*height+0.2*width), problem=problem)
 
     eliminate_duplicates = EliminateDuplicates()
-    repair = PathRepair()
+    repair = DirectionPathRepair()
+    #repair = PathRepair()
     #repair = errorRepair()
     ref_dirs = get_reference_directions("das-dennis", 2, n_partitions=5)
 
@@ -155,7 +162,7 @@ def simulation(m, w, h, a, c, mut, p, n, sm, s):
                    ,algorithm
                    ,('n_eval', n_eval)
                    ,seed=seed
-                   ,verbose=False)
+                   ,verbose=True)
 
     totalTime = time.time() - startingTime
     #print("res.pop: " + str(res.F))
