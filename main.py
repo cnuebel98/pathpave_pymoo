@@ -85,9 +85,9 @@ def simulation(m, w, h, a, c, mut, p, n, sm, s):
 
 # Create an instance of the Obstacles class
     obstacles = Obstacles(width, height, seed)
-    maps = [obstacles.create_random_obstacles, obstacles.create_obstacles_bubble_in_middle, obstacles.create_sinusoidal_obstacles, obstacles.create_gradient_obstacles,
-            obstacles.create_radial_gradient_obstacles, obstacles.create_perlin_noise_obstacles, obstacles.create_random_walk_obstacles, obstacles.create_maze_obstacles]
-
+    maps = [obstacles.create_sinusoidal_obstacles, obstacles.create_gradient_obstacles,
+            obstacles.create_radial_gradient_obstacles, obstacles.create_meandering_river_obstacles, obstacles.create_obstacles_bubble_in_middle]
+#obstacles.create_random_obstacles, , obstacles.create_perlin_noise_obstacles, obstacles.create_random_walk_obstacles, obstacles.create_maze_obstacles, 
 # Set map if defined
     if m != None:
         if (maps[m].__name__ != "create_random_walk_obstacles"):
@@ -168,19 +168,19 @@ def simulation(m, w, h, a, c, mut, p, n, sm, s):
     #print(pareto_front[:, 0])
 
     # Plot the Pareto front
-    #plt.figure(figsize=(10, 8))
-    #plt.scatter(pareto_front[:, 0], pareto_front[:, 1], label='Pareto Front', color='b')
+    plt.figure(figsize=(10, 8))
+    plt.scatter(pareto_front[:, 0], pareto_front[:, 1], label='Pareto Front', color='b')
 
     # Customize the plot
-    #plt.xlabel('Steps Taken')
-    #plt.ylabel('Total Weight Shifted')
-    #plt.title('Pareto Front')
-    #plt.legend()
-    #plt.grid(True)
+    plt.xlabel('Steps Taken')
+    plt.ylabel('Total Weight Shifted')
+    plt.title('Pareto Front')
+    plt.legend()
+    plt.grid(True)
     # Show the plot
     #plt.show()
     # Save plot
-    #plt.savefig(log.logPath+"/paretoPlot")
+    plt.savefig(log.logPath+"/paretoPlot")
     # Extract the paths from res.X
     paths = res.X.squeeze().tolist()
 
@@ -190,7 +190,7 @@ def simulation(m, w, h, a, c, mut, p, n, sm, s):
     #    print(path)
 
     # Create a plot for the final grid with paths
-    #fig, ax = plt.subplots(figsize=(13, 8))
+    fig, ax = plt.subplots(figsize=(7, 7))
 
     # Display the obstacle weights in the grid
     #for i in range(height):
@@ -198,29 +198,32 @@ def simulation(m, w, h, a, c, mut, p, n, sm, s):
     #        ax.text(j, i, f'{obstacles[i, j]:.2f}', va='center', ha='center', fontsize=12)
 
     # Plot the grid
-    #ax.imshow(obstacle_map, cmap='Greys', interpolation='nearest')
+    ax.imshow(obstacle_map, cmap='Greys', interpolation='nearest')
 
     # Mark the start and end points
-    #ax.plot(start[1], start[0], 'go', markersize=10, label='Start')  # Start point
-    #ax.plot(end[1], end[0], 'ro', markersize=10, label='End')        # End point
+    ax.plot(start[1], start[0], 'go', markersize=10, label='Start')  # Start point
+    ax.plot(end[1], end[0], 'ro', markersize=10, label='End')        # End point
 
     # Plot the paths of the final population
-    #if len(paths[0]) != 2:
-    #    for path in paths:
-    #        path_y, path_x = zip(*path)
-    #        ax.plot(path_x, path_y, marker='o')
-    #elif len(paths[0]) == 2:
-    #    path_y, path_x = zip(*paths)
-    #    ax.plot(path_x, path_y, marker='o')
+    if len(paths[0]) != 2:
+        for path in paths:
+            path_y, path_x = zip(*path)
+            ax.plot(path_x, path_y, marker='o')
+    elif len(paths[0]) == 2:
+        path_y, path_x = zip(*paths)
+        ax.plot(path_x, path_y, marker='o')
 
     # Set the ticks and labels
-    #ax.set_xticks(np.arange(width))
-    #ax.set_yticks(np.arange(height))
-    #ax.set_xticklabels(np.arange(width))
-    #ax.set_yticklabels(np.arange(height))
+    # Set x and y ticks in steps of 10
+    ax.set_xticks(np.arange(0, width, 5))
+    ax.set_yticks(np.arange(0, height, 5))
 
-    #plt.title("Obstacle Environemnt")
-    ## plt.show()
+    # Set x and y tick labels in steps of 10
+    ax.set_xticklabels(np.arange(0, width, 5))
+    ax.set_yticklabels(np.arange(0, height, 5))
+
+    #plt.title("Obstacle Environment")
+    plt.show()
     #plt.savefig(log.logPath+"/mapPlot")
     log.log(paths, pareto_front[:, 0], pareto_front[:, 1])
 
