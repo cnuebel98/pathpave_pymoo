@@ -326,10 +326,8 @@ class RadiusDirectionSamplingMutation(Mutation):
                 else: 
                     start_point_for_swap = y
                     end_point_for_swap = x
-
                 part_one = X_mut[i][0][:start_point_for_swap]
                 part_two = X_mut[i][0][end_point_for_swap:]
-                
                 y1, x1 = part_one[-1][0]
                 y2, x2 = part_two[0][0]
 
@@ -353,7 +351,6 @@ class RadiusDirectionSamplingMutation(Mutation):
                     #print(f"Currentpos: {newCombinedParts[j]}, nextPos: {newCombinedParts[j+1]}, validDirections: {validSD}")
                     newTuple = (newCombinedParts[j+1], validSD[random.randint(0, len(validSD)-1)])
                     tmp.append(newTuple)
-                
                 #Fuze everything back together
                 new_genes = part_one + tmp + part_two
                 X_mut[i][0] = new_genes
@@ -372,15 +369,13 @@ class RadiusDirectionSamplingMutation(Mutation):
             
             if 0 <= rand_y < problem.height and 0 <= rand_x < problem.width:
                 if (rand_y, rand_x) not in individual:
-                    return (rand_y, rand_x)
-    
+                    return (rand_y, rand_x)  
 
     def manhattan_distance(self, point1, point2):
         """Calculate the Manhattan distance between two points."""
         #print("Manhatten")
         return abs(point1[0] - point2[0]) + abs(point1[1] - point2[1])
-
-
+# 
     def greedy_path_find(self, start, end, problem):
         """Find a path from start to end using greedy best-first search."""
         path = [start]

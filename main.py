@@ -22,7 +22,7 @@ from sampling import RandomSampling, RandomDirectionSampling
 from mutations import CopyMutation, ChangePartsMutation, RectangleMutation, RadiusSamplingMutation, RadiusDirectionSamplingMutation
 from crossovers import CopyCrossover, CrossingCrossover, OnePointCrossover, OnePointGreedyDirectionCrossover
 from problem import GridWorldProblem
-from duplicate_handling import EliminateDuplicates
+from duplicate_handling import EliminateDuplicates, EliminateDirectionalDuplicates
 from repairs import ErrorRepair, PathRepair, DirectionPathRepair
 
 from pymoo.util.ref_dirs import get_reference_directions
@@ -35,7 +35,6 @@ log = Logger()
 # Define parameters
 width = 50
 height = 50
-seed = 42
 
 def main():
 
@@ -67,9 +66,10 @@ def simulation(m, w, h, a, c, mut, p, n, sm, s):
         random.seed(s)
         np.random.seed(s)
     else:
-        random.seed(420)
-        np.random.seed(420)
-        seed = 420
+        randomSeed = random.randint(0, 1000000)
+        random.seed(randomSeed)
+        np.random.seed(randomSeed)
+        seed = randomSeed
 
     # Set height and width if defined
     if w != None:
@@ -90,8 +90,8 @@ def simulation(m, w, h, a, c, mut, p, n, sm, s):
 
 # Create an instance of the Obstacles class
     obstacles = Obstacles(width, height, seed)
-    maps = [obstacles.create_random_obstacles, obstacles.create_obstacles_bubble_in_middle, obstacles.create_sinusoidal_obstacles, obstacles.create_gradient_obstacles,
-            obstacles.create_radial_gradient_obstacles, obstacles.create_perlin_noise_obstacles, obstacles.create_random_walk_obstacles, obstacles.create_maze_obstacles]
+    maps = [obstacles.create_sinusoidal_obstacles, obstacles.create_gradient_obstacles,
+            obstacles.create_radial_gradient_obstacles]
 
 # Set map if defined
     if m != None:
@@ -111,8 +111,8 @@ def simulation(m, w, h, a, c, mut, p, n, sm, s):
     else:
         pop_size = 50
 
-    #sampling = RandomSampling(width, height, start, end)
-    sampling = RandomDirectionSampling(width, height, start, end)
+    sampling = RandomSampling(width, height, start, end)
+    #sampling = RandomDirectionSampling(width, height, start, end)
 
     crossovers = [CrossingCrossover(prob_crossover=prob_crossover), CopyCrossover(), OnePointCrossover(prob_crossover, (width, height)), OnePointGreedyDirectionCrossover(prob_crossover, (width, height))]
     if c != None:
@@ -120,16 +120,16 @@ def simulation(m, w, h, a, c, mut, p, n, sm, s):
     else:
         crossover = OnePointCrossover(prob_crossover, (width, height))
 
-    mutations = [RadiusDirectionSamplingMutation(mutation_rate=mutation_rate, radius=int(0.2*height+0.2*width), problem=problem), RadiusSamplingMutation(mutation_rate=mutation_rate, radius=int(0.2*height+0.2*width), problem=problem), RectangleMutation(mutation_rate=mutation_rate), ChangePartsMutation(mutation_rate), CopyMutation()]
+    mutations = [RadiusDirectionSamplingMutation(mutation_rate=mutation_rate, radius=int(0.1*height+0.1*width), problem=problem), RadiusSamplingMutation(mutation_rate=mutation_rate, radius=int(0.1*height+0.1*width), problem=problem), RectangleMutation(mutation_rate=mutation_rate), ChangePartsMutation(mutation_rate), CopyMutation()]
 
     if mut != None:
         mutation = mutations[mut]
     else:
-        mutation = RadiusSamplingMutation(mutation_rate=mutation_rate, radius=int(0.2*height+0.2*width), problem=problem)
-
+        mutation = RadiusSamplingMutation(mutation_rate=mutation_rate, radius=int(0.1*height+0.1*width), problem=problem)
     eliminate_duplicates = EliminateDuplicates()
-    repair = DirectionPathRepair()
-    #repair = PathRepair()
+    #eliminate_duplicates = EliminateDirectionalDuplicates()
+    #repair = DirectionPathRepair()
+    repair = PathRepair()
     #repair = errorRepair()
     ref_dirs = get_reference_directions("das-dennis", 2, n_partitions=5)
 
@@ -191,11 +191,22 @@ def simulation(m, w, h, a, c, mut, p, n, sm, s):
     # Extract the paths from res.X
     paths = res.X.squeeze().tolist()
 
-    paths = [[item[0] for item in sublist] for sublist in paths]
-    # Print the paths
-    #print("Paths:")
-    #for path in paths:
-    #    print(path)
+    if shiftingMethod not in [0,1,2,3]:
+        paths = [[item[0] for item in sublist] for sublist in paths]
+        #print(paths)
+
+    print([len(x) for x in paths])
+    print(paths[0])
+    print(paths[-1])
+    for x in range(len(paths)):
+        for y in range(len(paths)):
+            if x == y:
+                continue
+            else:
+                if paths[x] == paths[y]:
+                    print("FOUND DUPLICATE")
+                    exit()
+        
 
     # Create a plot for the final grid with paths
     fig, ax = plt.subplots(figsize=(13, 8))
