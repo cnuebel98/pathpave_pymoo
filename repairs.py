@@ -54,7 +54,7 @@ class PathRepair(Repair):
         return path
     
 class DirectionPathRepair(Repair):
-    """Removes all circles and useless movements from path\nChecks for conncted paths."""
+    """Removes all circles and useless movements from path, also checks for valid shifting directions.\nChecks for conncted paths."""
 
     def _do(self, problem, X, **kwargs):
         #X[0][0] gets real path, so X[0] is path list
@@ -88,13 +88,13 @@ class DirectionPathRepair(Repair):
                 (currentCord[0]+0 , currentCord[1]-1),
             ]
             if nextCord not in possibleNextCoords:
-                raise ValueError(f"Path is not connected\n{[x[0] for x in path]}")
-                #width = problem.width
-                #height = problem.height
-                #if nextCord[0] > height or nextCord[0] < 0 or nextCord[1] > width or nextCord[1] < 0:
-                #    raise ValueError(f"Cord {nextCord} is out of bounds")
-                #else:
-                #    path = findGreedyPath(width, height, currentCord, nextCord) 
+                #raise ValueError(f"Path is not connected\n{[x[0] for x in path]}")
+                width = problem.width
+                height = problem.height
+                if nextCord[0] > height or nextCord[0] < 0 or nextCord[1] > width or nextCord[1] < 0:
+                    raise ValueError(f"Cord {nextCord} is out of bounds")
+                else:
+                    path = findGreedyPath(width, height, currentCord, nextCord) 
         return path
     
     def checkShiftingDirections(self, path:list, problem):

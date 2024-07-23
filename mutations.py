@@ -2,7 +2,7 @@ from pymoo.core.mutation import Mutation
 import copy
 import random
 import numpy as np
-from aStar import aStarPath
+from greedyPath import getValidShifting
 
 class CopyMutation(Mutation):
     def __init__(self):
@@ -236,6 +236,126 @@ class RadiusSamplingMutation(Mutation):
                 new_part_two = self.greedy_path_find(sampled_point, part_two[0], self.problem)
                 
                 new_genes = part_one + new_part_one + [sampled_point] + new_part_two + part_two
+                X_mut[i][0] = new_genes
+                
+        return np.array(X_mut)
+    
+    def find_midpoint(self, y1, x1, y2, x2):
+        mid_x = (x1 + x2) / 2
+        mid_y = (y1 + y2) / 2
+        return (int(mid_y), int(mid_x))
+    
+    def sample_point_within_radius(self, mid_y, mid_x, radius, problem, individual):
+        while True:
+            rand_y = mid_y + random.randint(-radius, radius)
+            rand_x = mid_x + random.randint(-radius, radius)
+            
+            if 0 <= rand_y < problem.height and 0 <= rand_x < problem.width:
+                if (rand_y, rand_x) not in individual:
+                    return (rand_y, rand_x)
+    
+
+    def manhattan_distance(self, point1, point2):
+        """Calculate the Manhattan distance between two points."""
+        #print("Manhatten")
+        return abs(point1[0] - point2[0]) + abs(point1[1] - point2[1])
+
+
+    def greedy_path_find(self, start, end, problem):
+        """Find a path from start to end using greedy best-first search."""
+        path = [start]
+        current_pos = start
+
+        while current_pos != end:
+            row, col = current_pos
+            
+            # Generate all possible moves (up, down, left, right)
+            possible_moves = [
+                (row - 1, col), (row + 1, col),
+                (row, col - 1), (row, col + 1)
+            ]
+            
+            # Filter out invalid moves
+            valid_moves = [
+                move for move in possible_moves
+                if 0 <= move[0] < problem.height and 0 <= move[1] < problem.width
+            ]
+            
+            if not valid_moves:
+                break  # No valid moves available
+
+            # Choose the move that minimizes the heuristic (Manhattan distance to the end)
+            next_pos = min(valid_moves, key=lambda move: self.manhattan_distance(move, end))
+            
+            # Add the chosen move to the path
+            path.append(next_pos)
+            current_pos = next_pos
+
+        # Remove the last point from the path if it's the same as 'end'
+        if path[-1] == end:
+            path.pop()
+
+        return path
+
+class RadiusDirectionSamplingMutation(Mutation):
+    '''cuts the individual at 2 points. Find the midpoint between the two cuts. 
+    Then samples a random point within a specific radius around the midpoint. 
+    Then it finds a greedy new path connectiong the two cutoff points with the sampled point.
+    Afterwards, we add valid shifting directions to fit it to the dicretional shifting approach.'''
+    def __init__(self, mutation_rate, radius, problem):
+        self.mutation_rate = mutation_rate
+        self.radius = radius
+        self.problem = problem
+        super().__init__(1)
+   
+    def _do(self, problem, X, **kwargs):
+        X_mut = copy.deepcopy(X)
+        #X_mut[1][0][0] gives us the tuples of one gene
+        
+        for i in range(len(X_mut)):
+            if random.random() < self.mutation_rate:
+                individual_length = len(X_mut[i][0])
+                
+                len_of_cut_part = int(0.2 * len(X_mut[i][0]))
+                x = random.randint(1, individual_length - 1 - len_of_cut_part)
+                y = x + len_of_cut_part
+                
+                if x < y:
+                    start_point_for_swap = x
+                    end_point_for_swap = y
+                else: 
+                    start_point_for_swap = y
+                    end_point_for_swap = x
+
+                part_one = X_mut[i][0][:start_point_for_swap]
+                part_two = X_mut[i][0][end_point_for_swap:]
+                
+                y1, x1 = part_one[-1][0]
+                y2, x2 = part_two[0][0]
+
+                midpoint = self.find_midpoint(y1, x1, y2, x2)
+                sampled_point = self.sample_point_within_radius(midpoint[0], midpoint[1], self.radius, self.problem, X_mut[i][0])
+                
+                new_part_one = self.greedy_path_find(part_one[-1][0], sampled_point, self.problem)
+                new_part_two = self.greedy_path_find(sampled_point, part_two[0][0], self.problem)
+                
+                #Idea is to sample path without directions and then add valid shifting direction afterwards
+                newCombinedParts = new_part_one + [sampled_point] + new_part_two
+                tmp = []
+
+                #Get shifting for first coord in newCombinedParts
+                validFristCoords = getValidShifting(problem.width, problem.height, part_one[-1], newCombinedParts[0])
+                tmp.append(((newCombinedParts[0]), validFristCoords[random.randint(0, len(validFristCoords)-1)]))
+
+                #Get shifting for rest of the parts besides last new coord
+                for j in range(len(newCombinedParts)-1):
+                    validSD = getValidShifting(problem.width, problem.height, newCombinedParts[j], newCombinedParts[j+1])
+                    #print(f"Currentpos: {newCombinedParts[j]}, nextPos: {newCombinedParts[j+1]}, validDirections: {validSD}")
+                    newTuple = (newCombinedParts[j+1], validSD[random.randint(0, len(validSD)-1)])
+                    tmp.append(newTuple)
+                
+                #Fuze everything back together
+                new_genes = part_one + tmp + part_two
                 X_mut[i][0] = new_genes
                 
         return np.array(X_mut)

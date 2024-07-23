@@ -79,7 +79,6 @@ class RandomDirectionSampling(Sampling):
             direction for direction in possibleShiftingDirections 
             if 0 <= direction[0] < self.height and 0 <= direction[1] < self.width
         ]
-        start_x, start_y = self.start
         startTuple = (self.start, possibleShiftingDirections[np.random.randint(len(possibleShiftingDirections))])
         path = [startTuple]
         current_pos = self.start

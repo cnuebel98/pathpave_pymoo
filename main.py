@@ -19,7 +19,7 @@ from pymoo.algorithms.moo.sms import SMSEMOA
 from pymoo.algorithms.moo.ctaea import CTAEA
 
 from sampling import RandomSampling, RandomDirectionSampling
-from mutations import CopyMutation, ChangePartsMutation, RectangleMutation, RadiusSamplingMutation
+from mutations import CopyMutation, ChangePartsMutation, RectangleMutation, RadiusSamplingMutation, RadiusDirectionSamplingMutation
 from crossovers import CopyCrossover, CrossingCrossover, OnePointCrossover, OnePointGreedyDirectionCrossover
 from problem import GridWorldProblem
 from duplicate_handling import EliminateDuplicates
@@ -120,7 +120,7 @@ def simulation(m, w, h, a, c, mut, p, n, sm, s):
     else:
         crossover = OnePointCrossover(prob_crossover, (width, height))
 
-    mutations = [RadiusSamplingMutation(mutation_rate=mutation_rate, radius=int(0.2*height+0.2*width), problem=problem), RectangleMutation(mutation_rate=mutation_rate), ChangePartsMutation(mutation_rate), CopyMutation()]
+    mutations = [RadiusDirectionSamplingMutation(mutation_rate=mutation_rate, radius=int(0.2*height+0.2*width), problem=problem), RadiusSamplingMutation(mutation_rate=mutation_rate, radius=int(0.2*height+0.2*width), problem=problem), RectangleMutation(mutation_rate=mutation_rate), ChangePartsMutation(mutation_rate), CopyMutation()]
 
     if mut != None:
         mutation = mutations[mut]
@@ -175,29 +175,30 @@ def simulation(m, w, h, a, c, mut, p, n, sm, s):
     #print(pareto_front[:, 0])
 
     # Plot the Pareto front
-    #plt.figure(figsize=(10, 8))
-    #plt.scatter(pareto_front[:, 0], pareto_front[:, 1], label='Pareto Front', color='b')
+    plt.figure(figsize=(10, 8))
+    plt.scatter(pareto_front[:, 0], pareto_front[:, 1], label='Pareto Front', color='b')
 
     # Customize the plot
-    #plt.xlabel('Steps Taken')
-    #plt.ylabel('Total Weight Shifted')
-    #plt.title('Pareto Front')
-    #plt.legend()
-    #plt.grid(True)
+    plt.xlabel('Steps Taken')
+    plt.ylabel('Total Weight Shifted')
+    plt.title('Pareto Front')
+    plt.legend()
+    plt.grid(True)
     # Show the plot
     #plt.show()
     # Save plot
-    #plt.savefig(log.logPath+"/paretoPlot")
+    plt.savefig(log.logPath+"/paretoPlot")
     # Extract the paths from res.X
     paths = res.X.squeeze().tolist()
 
+    paths = [[item[0] for item in sublist] for sublist in paths]
     # Print the paths
     #print("Paths:")
     #for path in paths:
     #    print(path)
 
     # Create a plot for the final grid with paths
-    #fig, ax = plt.subplots(figsize=(13, 8))
+    fig, ax = plt.subplots(figsize=(13, 8))
 
     # Display the obstacle weights in the grid
     #for i in range(height):
@@ -205,30 +206,30 @@ def simulation(m, w, h, a, c, mut, p, n, sm, s):
     #        ax.text(j, i, f'{obstacles[i, j]:.2f}', va='center', ha='center', fontsize=12)
 
     # Plot the grid
-    #ax.imshow(obstacle_map, cmap='Greys', interpolation='nearest')
+    ax.imshow(obstacle_map, cmap='Greys', interpolation='nearest')
 
     # Mark the start and end points
-    #ax.plot(start[1], start[0], 'go', markersize=10, label='Start')  # Start point
-    #ax.plot(end[1], end[0], 'ro', markersize=10, label='End')        # End point
+    ax.plot(start[1], start[0], 'go', markersize=10, label='Start')  # Start point
+    ax.plot(end[1], end[0], 'ro', markersize=10, label='End')        # End point
 
     # Plot the paths of the final population
-    #if len(paths[0]) != 2:
-    #    for path in paths:
-    #        path_y, path_x = zip(*path)
-    #        ax.plot(path_x, path_y, marker='o')
-    #elif len(paths[0]) == 2:
-    #    path_y, path_x = zip(*paths)
-    #    ax.plot(path_x, path_y, marker='o')
+    if len(paths[0]) != 2:
+        for path in paths:
+            path_y, path_x = zip(*path)
+            ax.plot(path_x, path_y, marker='o')
+    elif len(paths[0]) == 2:
+        path_y, path_x = zip(*paths)
+        ax.plot(path_x, path_y, marker='o')
 
     # Set the ticks and labels
-    #ax.set_xticks(np.arange(width))
-    #ax.set_yticks(np.arange(height))
-    #ax.set_xticklabels(np.arange(width))
-    #ax.set_yticklabels(np.arange(height))
+    ax.set_xticks(np.arange(width))
+    ax.set_yticks(np.arange(height))
+    ax.set_xticklabels(np.arange(width))
+    ax.set_yticklabels(np.arange(height))
 
-    #plt.title("Obstacle Environemnt")
+    plt.title("Obstacle Environemnt")
     ## plt.show()
-    #plt.savefig(log.logPath+"/mapPlot")
+    plt.savefig(log.logPath+"/mapPlot")
     log.log(paths, pareto_front[:, 0], pareto_front[:, 1])
 
 if __name__ == "__main__":
