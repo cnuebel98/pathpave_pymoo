@@ -16,9 +16,11 @@ class PathRepair(Repair):
 
     def _do(self, problem, X, **kwargs):
         #X[0][0] gets real path, so X[0] is path list
+        
         for i in range(len(X)):
             for j in range(len(X[i])):
-                X[i][j] = self.checkConnection(self.eliminateCircles(X[i][j]), problem)
+                #X[i][j] = self.checkConnection(X[i][j], problem)
+                ...
         return(X)
 
     def eliminateCircles(self, path: list) -> list:
@@ -33,9 +35,12 @@ class PathRepair(Repair):
 
     def checkConnection(self, path: list, problem) -> list:
         """Checks if path is fully connected, if not we use A-Star to fix."""
+        #print(path)
         for i in range(len(path)-1):
             currentCord = path[i]
+            #print(currentCord)
             nextCord = path[i+1]
+            #print(nextCord)
             possibleNextCoords = [
                 (currentCord[0]+1 , currentCord[1]+0),
                 (currentCord[0]+0 , currentCord[1]+1),

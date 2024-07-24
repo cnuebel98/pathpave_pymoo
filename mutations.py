@@ -246,13 +246,17 @@ class RadiusSamplingMutation(Mutation):
         return (int(mid_y), int(mid_x))
     
     def sample_point_within_radius(self, mid_y, mid_x, radius, problem, individual):
-        while True:
+        for _ in range(1000):
             rand_y = mid_y + random.randint(-radius, radius)
             rand_x = mid_x + random.randint(-radius, radius)
             
             if 0 <= rand_y < problem.height and 0 <= rand_x < problem.width:
-                if (rand_y, rand_x) not in individual:
-                    return (rand_y, rand_x)
+                #if (rand_y, rand_x) not in individual:
+                return (rand_y, rand_x)
+        
+        rand_x = random.randint(0, problem.width - 1)
+        rand_y = random.randint(0, problem.height - 1)
+        return (rand_y, rand_x)
     
 
     def manhattan_distance(self, point1, point2):
