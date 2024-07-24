@@ -23,7 +23,7 @@ from crossovers import CopyCrossover, CrossingCrossover, OnePointCrossover, TwoP
 from problem import GridWorldProblem
 from duplicate_handling import EliminateDuplicates
 from repairs import ErrorRepair, PathRepair
-from callback import Callback
+from callback import MyCallback
 
 from pymoo.util.ref_dirs import get_reference_directions
 from obstacles import Obstacles
@@ -154,7 +154,7 @@ def simulation(m, w, h, a, c, mut, p, n, sm, s):
         n_eval = 1000
 
     # Create a callback object
-    callback = Callback()
+    callback = MyCallback()
 
     # Run optimization
     res = minimize(problem
@@ -171,13 +171,18 @@ def simulation(m, w, h, a, c, mut, p, n, sm, s):
     #LOGGING
     log.createLogFile(obstacles, width, height, algorithm, crossover, mutation, pop_size, n_eval, sampling, repair, shiftingMethod, seed, totalTime)
 
+    for i in range(len(callback.data["paths"])):
+        log.logAllGenerationalSteps(callback.data["objectiveValues"][i], callback.data["paths"][i], i)
+
+    for i in range(len(callback.data["optPaths"])):
+        log.logOptGenerationalSteps(callback.data["optObjectiveValues"][i], callback.data["optPaths"][i], i)
     #print(pareto_front[:, 0])
 
     # Extract the Pareto optimal paths and fitness values
-    po_fitness_values_per_gen = callback.data["po_f_values"]
-    po_paths_per_gen = callback.data["po_paths"]
-    all_fitness_values_per_gen = callback.data["all_f_values"]
-    all_paths_per_gen = callback.data["all_paths"]
+    po_fitness_values_per_gen = callback.data["optObjectiveValues"]
+    po_paths_per_gen = callback.data["optPaths"]
+    all_fitness_values_per_gen = callback.data["objectiveValues"]
+    all_paths_per_gen = callback.data["paths"]
     
     #print(len(all_fitness_values_per_gen)) # = 200 for 200 Generations
     #print(len(all_fitness_values_per_gen[0])) # = 50 for 50 individuals
