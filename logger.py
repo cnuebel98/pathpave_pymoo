@@ -25,6 +25,9 @@ class Logger():
         #Check if csv exists
         if not os.path.exists("./log/results.csv"):
             with open("./log/results.csv", "w") as f:
+                #We add the header of the file here
+                header = "map, width, height, algorithm, crossover, mutation, popsize, n_eval, samplingFunction, repairFunction, shiftingMethod, seed, numberOfNonDominated, steps, shiftedWeight, paths, time\n"
+                f.write(header)
                 f.close()
 
 
@@ -73,5 +76,70 @@ class Logger():
             "paths": paths,
             "time": self.time
         }
-        frame = pd.DataFrame(log_obj)
+        frame = pd.DataFrame.from_dict(log_obj, orient='index')
+        frame = frame.transpose()
         frame.to_csv("./log/results.csv", mode='a', index = False, header=False)
+
+    def logAllGenerationalSteps(self, objectiveTuple, paths, generation):
+        #Check if csv for generations exist
+        if not os.path.exists(self.logPath +"/log.csv"):
+            with open(self.logPath +"/log.csv", "w") as f:
+                header = "generation, map, width, height, algorithm, crossover, mutation, popsize, n_eval, samplingFunction, repairFunction, shiftingMethod, seed, objectiveValues, paths\n"
+                f.write(header)
+                f.close()
+        formattedPaths = []
+        for x in paths:
+            formattedPaths.append(x[0])
+
+        log_obj = {
+            "generation" : generation,
+            "map": self.map,
+            "width": self.width,
+            "height": self.height,
+            "algorithm": self.algorithm,
+            "crossover": self.crossover,
+            "mutation": self.mutation,
+            "popsize": self.popsize,
+            "n_eval": self.n_eval,
+            "samplingFunction": self.samplingFunction,
+            "repairFunction": self.repairFunction,
+            "shiftingMethod": self.shiftingMethod,
+            "seed": self.seed,
+            "objectives": list(objectiveTuple),
+            "paths": formattedPaths,
+        }
+        frame = pd.DataFrame.from_dict(log_obj, orient='index')
+        frame = frame.transpose()
+        frame.to_csv(self.logPath +"/log.csv", mode='a', index = False, header=False)
+
+    def logOptGenerationalSteps(self, objectiveTuple, paths, generation):
+        #Check if csv for generations exist
+        if not os.path.exists(self.logPath +"/optLog.csv"):
+            with open(self.logPath +"/optLog.csv", "w") as f:
+                header = "generation, map, width, height, algorithm, crossover, mutation, popsize, n_eval, samplingFunction, repairFunction, shiftingMethod, seed, objectiveValues, paths\n"
+                f.write(header)
+                f.close()
+        formattedPaths = []
+        for x in paths:
+            formattedPaths.append(x[0])
+
+        log_obj = {
+            "generation" : generation,
+            "map": self.map,
+            "width": self.width,
+            "height": self.height,
+            "algorithm": self.algorithm,
+            "crossover": self.crossover,
+            "mutation": self.mutation,
+            "popsize": self.popsize,
+            "n_eval": self.n_eval,
+            "samplingFunction": self.samplingFunction,
+            "repairFunction": self.repairFunction,
+            "shiftingMethod": self.shiftingMethod,
+            "seed": self.seed,
+            "objectives": list(objectiveTuple),
+            "paths": formattedPaths,
+        }
+        frame = pd.DataFrame.from_dict(log_obj, orient='index')
+        frame = frame.transpose()
+        frame.to_csv(self.logPath +"/optLog.csv", mode='a', index = False, header=False)

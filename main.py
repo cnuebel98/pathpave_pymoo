@@ -23,6 +23,7 @@ from crossovers import CopyCrossover, CrossingCrossover, OnePointCrossover
 from problem import GridWorldProblem
 from duplicate_handling import EliminateDuplicates
 from repairs import ErrorRepair, PathRepair
+from callback import MyCallback
 
 from pymoo.util.ref_dirs import get_reference_directions
 from obstacles import Obstacles
@@ -155,16 +156,24 @@ def simulation(m, w, h, a, c, mut, p, n, sm, s):
                    ,algorithm
                    ,('n_eval', n_eval)
                    ,seed=seed
-                   ,verbose=False)
+                   ,verbose=False
+                   ,callback = MyCallback())
 
     totalTime = time.time() - startingTime
     #print("res.pop: " + str(res.F))
 
     # Extract the Pareto front data
     pareto_front = res.F
+    
     #LOGGING
     log.createLogFile(obstacles, width, height, algorithm, crossover, mutation, pop_size, n_eval, sampling, repair, shiftingMethod, seed, totalTime)
+    
+    #This gives us the number of generations to use for iteration over the callback object
+    for i in range(len(res.algorithm.callback.data["paths"])):
+        log.logAllGenerationalSteps(res.algorithm.callback.data["objectiveValues"][i], res.algorithm.callback.data["paths"][i], i)
 
+    for i in range(len(res.algorithm.callback.data["optPaths"])):
+        log.logOptGenerationalSteps(res.algorithm.callback.data["optObjectiveValues"][i], res.algorithm.callback.data["optPaths"][i], i)
     #print(pareto_front[:, 0])
 
     # Plot the Pareto front
