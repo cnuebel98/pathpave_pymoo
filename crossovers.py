@@ -76,25 +76,26 @@ class OnePointCrossover(Crossover):
 
         if firstPoint != secondPoint:
             #TODO: Get map parameters here
-            path = aStarPath(self.width, self.height, firstPoint, secondPoint, True)
+            path = self.greedy_path_find(firstPoint, secondPoint)
+            #print("#################FIRST#################")
+            #print(path)
+            #print(crossoverIndividuals[0][:cutoffPoint])
+            #print(crossoverIndividuals[1][cutoffPoint:])
             newFirstPath = crossoverIndividuals[0][:cutoffPoint]
-            newFirstPath += path[:-1]
+            newFirstPath += path
             newFirstPath += crossoverIndividuals[1][cutoffPoint:]
-            newSecondPath = crossoverIndividuals[1][:cutoffPoint]
+            #I WONDER HOW, I WONDER WHY +1 FIXES THE PROBLEM
+            #AS FAR AS IT CONCERNS ME, I WONT ASK WHY
+            newSecondPath = crossoverIndividuals[1][:cutoffPoint+1]
             path.reverse()
-            newSecondPath += path[:-1]
+            newSecondPath += path
             newSecondPath += crossoverIndividuals[0][cutoffPoint:]
+            #print("#################SECOND################")
+            #print(path)
+            #print(crossoverIndividuals[1][:cutoffPoint])
+            #print(crossoverIndividuals[0][cutoffPoint:])
             newFirstPath = newFirstPath
             newSecondPath = newSecondPath
-
-
-
-            convFirst = np.empty(1, dtype=object)
-            convFirst[:] = [newFirstPath]
-            X[0] = convFirst
-            convSecond = np.empty(1, dtype=object)
-            convSecond[:] = [newSecondPath]
-            X[1] = convSecond
             #print(X)
         else:
             newFirstPath = crossoverIndividuals[0][:cutoffPoint]
@@ -104,15 +105,72 @@ class OnePointCrossover(Crossover):
             newFirstPath = newFirstPath
             newSecondPath = newSecondPath
 
-            convFirst = np.empty(1, dtype=object)
-            convFirst[:] = [newFirstPath]
-            X[0] = convFirst
-            convSecond = np.empty(1, dtype=object)
-            convSecond[:] = [newSecondPath]
-            X[1] = convSecond
+        self.checkConnection(newFirstPath)
+        self.checkConnection(newSecondPath)
+
+        convFirst = np.empty(1, dtype=object)
+        convFirst[:] = [newFirstPath]
+        X[0] = convFirst
+        convSecond = np.empty(1, dtype=object)
+        convSecond[:] = [newSecondPath]
+        X[1] = convSecond
 
         return X
+    
+    def checkConnection(self, path: list[tuple]):
+        """Checks if crossover produced a valid path."""
+        possibleDirections = [(+1, 0), (-1, 0), (0, +1), (0, -1), (0 ,0)]
+        for x in range(len(path)-1):
+            coord1 = path[x]
+            coord2 = path[x+1]
+            #print(coord1)
+            direction = (coord2[0]-coord1[0], coord2[1]-coord1[1])
+            if direction not in possibleDirections:
+                raise ValueError(f"Invalid direction, tried to move from {coord1} to {coord2}")
+        return path
+    
+    def greedy_path_find(self, start, end):
+        """Find a path from start to end using greedy best-first search."""
+        if start == end:
+            return []
 
+        path = [start]
+        current_pos = start
+
+        while current_pos != end:
+            row, col = current_pos
+            
+            # Generate all possible moves (up, down, left, right)
+            possible_moves = [
+                (row - 1, col), (row + 1, col),
+                (row, col - 1), (row, col + 1)
+            ]
+            
+            # Filter out invalid moves
+            valid_moves = [
+                move for move in possible_moves
+                if 0 <= move[0] < self.height and 0 <= move[1] < self.width
+            ]
+            
+            if not valid_moves:
+                break  # No valid moves available
+
+            # Choose the move that minimizes the heuristic (Manhattan distance to the end)
+            next_pos = min(valid_moves, key=lambda move: self.manhattan_distance(move, end))
+            
+            # Add the chosen move to the path
+            path.append(next_pos)
+            current_pos = next_pos
+
+        if path[-1] == end:
+            path.pop()
+
+        return path
+
+    def manhattan_distance(self, point1, point2):
+        """Calculate the Manhattan distance between two points."""
+        return abs(point1[0] - point2[0]) + abs(point1[1] - point2[1])
+           
 
 class TwoPointCrossover_old(Crossover):
     def __init__(self, prob_crossover, mapSize: tuple):
