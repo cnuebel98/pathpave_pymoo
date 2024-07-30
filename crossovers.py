@@ -120,15 +120,19 @@ class OnePointCrossover(Crossover):
     def checkConnection(self, path: list[tuple]):
         """Checks if crossover produced a valid path."""
         possibleDirections = [(+1, 0), (-1, 0), (0, +1), (0, -1)]
+        doubledIndices = []
         for x in range(len(path)-1):
             coord1 = path[x]
             coord2 = path[x+1]
-            #print(coord1)
             direction = (coord2[0]-coord1[0], coord2[1]-coord1[1])
             if direction ==  (0 ,0):
-                path.pop(x)
+                doubledIndices.append(x)
             elif direction not in possibleDirections:
                 raise ValueError(f"Invalid direction, tried to move from {coord1} to {coord2}")
+            
+        for i in range(len(doubledIndices)):
+            path.pop(doubledIndices[len(doubledIndices)-1-i])
+            
         return path
     
     def greedy_path_find(self, start, end):
