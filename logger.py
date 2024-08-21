@@ -52,8 +52,12 @@ class Logger():
             self.shiftingMethod = "leastRestiance"
         elif shiftingMethod == 2:
             self.shiftingMethod = "splitInHalfShift"
-        else:
+        elif shiftingMethod == 3:
             self.shiftingMethod = "splitInThirdsShift"
+        elif shiftingMethod == 4:
+            self.shiftingMethod = "maxResistanceShift"
+        else:
+            self.shiftingMethod = "equalizeNeighborWeights"
 
     def log(self, paths, steps, shiftedWeight):
         """Creates a log object and writes it to the json file."""
