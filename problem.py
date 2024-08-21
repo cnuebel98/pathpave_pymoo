@@ -266,41 +266,44 @@ class GridWorldProblem(Problem):
             (row, col-1), (row, col+1)
         ]
 
-        valid_shifts = []
-        for shift in possible_neighbors:
-            shift_row, shift_col = shift
-            if 0 <= shift_row < self.height and 0 <= shift_col < self.width:
-                if shift != current_cell:
-                    valid_shifts.append(shift)
+        # Validate neighbors
+        valid_shifts = [
+            shift for shift in possible_neighbors
+            if 0 <= shift[0] < self.height and 0 <= shift[1] < self.width and shift != current_cell
+        ]
 
+        # If no valid neighbors, return the grid as is
         if not valid_shifts:
+            print("No valid shifts, but there are always valid shifts")
             return updated_grid
         
-        # Compute the target weight for each neighbor
+        # Calculate total weight to be distributed
         total_weight = weight_to_move + sum(updated_grid[shift[0], shift[1]] for shift in valid_shifts)
-        target_weight = total_weight / (len(valid_shifts) + 1)  # +1 to include the next cell itself
+        target_weight = total_weight / (len(valid_shifts) + 1)
 
-        # Create a list to track weight changes
+        # Calculate weight changes for each neighbor
         weight_changes = {shift: target_weight - updated_grid[shift[0], shift[1]] for shift in valid_shifts}
-        
-        # Ensure weight moves do not exceed available weight
+
+        # Only keep positive changes (since we don't remove weight from neighbors)
         total_needed = sum(max(change, 0) for change in weight_changes.values())
-        
-        if total_needed > weight_to_move:
-            # If more weight is needed than available, normalize
-            normalization_factor = weight_to_move / total_needed
+
+        # Check for divide by zero before applying normalization
+        if total_needed > 0:
+            normalization_factor = min(1, weight_to_move / total_needed)  # Normalize if necessary
             for shift in weight_changes:
                 weight_changes[shift] *= normalization_factor
-        
-        # Apply weight changes
-        for shift in weight_changes:
-            weight_change = weight_changes[shift]
+        else:
+            normalization_factor = 0  # No normalization needed
+
+        # Apply the weight changes to the neighbors
+        for shift, weight_change in weight_changes.items():
             if weight_change > 0:
-                # Move weight to the neighbor
                 updated_grid[shift[0], shift[1]] += weight_change
                 weight_to_move -= weight_change
-            # Negative changes are not needed because we don't remove weight from neighbors in this method
-        
+
+        # Ensure weight_to_move does not become negative due to floating-point errors
+        weight_to_move = max(weight_to_move, 0)
+
         # Set the remaining weight of the next cell
         updated_grid[next_cell[0], next_cell[1]] = weight_to_move
 
