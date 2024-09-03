@@ -188,16 +188,22 @@ class GridWorldProblem(Problem):
             updated_grid[left_neighbor[0], left_neighbor[1]] += third_weight
             updated_grid[right_neighbor[0], right_neighbor[1]] += third_weight
             updated_grid[forward_neighbor[0], forward_neighbor[1]] += third_weight
-        elif left_in_bounds and right_in_bounds:
+        elif left_in_bounds and right_in_bounds and not forward_in_bounds:
             half_weight = weight_to_move / 2
             updated_grid[left_neighbor[0], left_neighbor[1]] += half_weight
             updated_grid[right_neighbor[0], right_neighbor[1]] += half_weight
-        elif left_in_bounds:
+        elif left_in_bounds and forward_in_bounds and not right_in_bounds:
+            half_weight = weight_to_move / 2
+            updated_grid[left_neighbor[0], left_neighbor[1]] += half_weight
+            updated_grid[forward_neighbor[0], forward_neighbor[1]] += half_weight
+        elif right_in_bounds and forward_in_bounds and not left_in_bounds:
+            half_weight = weight_to_move / 2
+            updated_grid[right_neighbor[0], right_neighbor[1]] += half_weight
+            updated_grid[forward_neighbor[0], forward_neighbor[1]] += half_weight
+        elif left_in_bounds and not right_in_bounds and not forward_in_bounds:
             updated_grid[left_neighbor[0], left_neighbor[1]] += weight_to_move
-        elif right_in_bounds:
+        elif right_in_bounds and not left_in_bounds and not forward_in_bounds:
             updated_grid[right_neighbor[0], right_neighbor[1]] += weight_to_move
-        elif forward_in_bounds:
-            updated_grid[forward_neighbor[0], forward_neighbor[1]] += weight_to_move
         else:
             raise ValueError("All neighbors are out of bounds")
 
