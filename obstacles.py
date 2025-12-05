@@ -129,8 +129,6 @@ class Obstacles:
         noise = (noise - np.min(noise)) / (np.max(noise) - np.min(noise))
         return noise
 
-
-
     def create_maze_obstacles(self):
         self.name = "mazeObstacles"
         # Initialize maze with all walls
@@ -227,3 +225,23 @@ class Obstacles:
         obstacles = np.flipud(obstacles)
 
         return obstacles
+
+    def create_steep_gradient_obstacles(self, slope=7, intercept=0):
+        self.name = "gradientObstacles"
+        gradient = np.zeros((self.height, self.width))
+
+        for i in range(self.height):
+            for j in range(self.width):
+                # Calculate the perpendicular distance to the line i = slope * j + intercept
+                distance_to_line = abs(slope * j - i + intercept) / np.sqrt(slope**2 + 1)
+                max_distance = np.sqrt(self.height**2 + self.width**2)
+                normalized_distance = distance_to_line / max_distance
+                
+                # The farther from the line, the higher the value, reversed
+                gradient[i, j] = 0.5 * (1 - normalized_distance)
+                
+                # Optionally adjust for areas above or below the line
+                if i > slope * j + intercept:
+                    gradient[i, j] = 1 - gradient[i, j]
+            
+        return gradient

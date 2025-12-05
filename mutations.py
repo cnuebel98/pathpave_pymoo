@@ -207,7 +207,7 @@ class RadiusSamplingMutation(Mutation):
    
     def _do(self, problem, X, **kwargs):
         X_mut = copy.deepcopy(X)
-        
+        print(X_mut)
         for i in range(len(X_mut)):
             if random.random() < self.mutation_rate:
                 individual_length = len(X_mut[i][0])

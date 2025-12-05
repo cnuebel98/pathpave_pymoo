@@ -20,6 +20,7 @@ class PathRepair(Repair):
         for i in range(len(X)):
             for j in range(len(X[i])):
                 #X[i][j] = self.checkConnection(X[i][j], problem)
+                #X[i][j] = self.checkConnection(self.eliminateCircles(X[i][j]), problem)
                 ...
         return(X)
 
