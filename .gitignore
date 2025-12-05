@@ -1,10 +1,22 @@
 # Ignore log data
 log/
+extraData.tar.gz
+equalizeNeighborWeights.tar
+newS3log.tar.gz
 
 #Ignore Visualization stuff and Map Pictures
 vis_all_in_one.py
 Map_pics/
 .DS_Store
+.vscode
+archivingMirrorData/
+csv_formatted/
+extraDataForDoubleCheck
+
+GD_Calc_Data_Last_10_Rows/
+GD_Calc_Data_Row_50
+non_dominated_True_Pareto_Fronts
+non_dominated_True_Pareto_Fronts_old
 
 # Ignore virtual environment
 pythpave_pymoo/
